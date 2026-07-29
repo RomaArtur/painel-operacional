@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRACKen Operacional - Parceria Fique no Verde Já</title>
     
-    <!-- Tailwind CSS for rapid styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome for standard icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts: Inter -->
@@ -18,27 +18,12 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        tracken: {
-                            green: '#74C843',
-                            dark: '#2A2A2A',
-                            gray: '#595959',
-                            bg: '#F5F6FA',
-                            border: '#E5E7EB',
-                            sidebarHover: '#F3F4F6',
-                            active: '#EFFFEC'
-                        },
-                        fnvj: {
-                            green: '#10B981',
-                            dark: '#047857'
-                        }
+                        tracken: { green: '#74C843', dark: '#2A2A2A', gray: '#595959', bg: '#F5F6FA', border: '#E5E7EB', sidebarHover: '#F3F4F6', active: '#EFFFEC' },
+                        fnvj: { green: '#10B981', dark: '#047857' }
                     },
-                    boxShadow: {
-                        'card': '0 2px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)',
-                    }
+                    boxShadow: { 'card': '0 2px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)' }
                 }
             }
         }
@@ -80,83 +65,56 @@
         .custom-checkbox:checked { background-color: #74C843; border-color: #74C843; }
         .custom-checkbox:checked::before { transform: scale(1); }
 
-        .drawer-overlay {
-            transition: opacity 0.3s ease;
-            opacity: 0;
-            pointer-events: none;
-        }
+        /* Drawer */
+        .drawer-overlay { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
         .drawer-overlay.active { opacity: 1; pointer-events: auto; }
-        
-        .drawer-panel {
-            transition: transform 0.3s ease;
-            transform: translateX(100%);
-        }
+        .drawer-panel { transition: transform 0.3s ease; transform: translateX(100%); }
         .drawer-panel.active { transform: translateX(0); }
 
-        .modal-overlay {
-            transition: opacity 0.2s ease;
-            opacity: 0;
-            pointer-events: none;
-        }
+        /* Modal */
+        .modal-overlay { transition: opacity 0.2s ease; opacity: 0; pointer-events: none; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content {
-            transition: transform 0.2s ease, opacity 0.2s ease;
-            transform: scale(0.95);
-            opacity: 0;
-        }
+        .modal-content { transition: transform 0.2s ease, opacity 0.2s ease; transform: scale(0.95); opacity: 0; }
         .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
 
+        /* Timeline */
         .timeline-container { position: relative; padding-left: 1.5rem; }
-        .timeline-container::before {
-            content: '';
-            position: absolute;
-            left: 0.35rem;
-            top: 0.5rem;
-            bottom: 0;
-            width: 2px;
-            background-color: #e2e8f0;
-        }
+        .timeline-container::before { content: ''; position: absolute; left: 0.35rem; top: 0.5rem; bottom: 0; width: 2px; background-color: #e2e8f0; }
         .timeline-item { position: relative; margin-bottom: 1.5rem; }
-        .timeline-dot {
-            position: absolute;
-            left: -1.5rem;
-            top: 0.25rem;
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background-color: #cbd5e1;
-            border: 2px solid white;
-        }
+        .timeline-dot { position: absolute; left: -1.5rem; top: 0.25rem; width: 0.75rem; height: 0.75rem; border-radius: 50%; background-color: #cbd5e1; border: 2px solid white; }
         .timeline-dot.active { background-color: #74C843; }
         .timeline-dot.partner { background-color: #10B981; }
 
         .action-menu { display: none; }
         .action-menu.active { display: block; }
 
-        /* Ajuste para logos */
-        .logo-tracken {
-            max-height: 40px;
-            width: auto;
-            object-fit: contain;
+        .logo-tracken-sidebar { max-height: 32px; width: auto; object-fit: contain; }
+        .logo-fnvj { max-height: 50px; width: auto; object-fit: contain; }
+
+        /* Mobile sidebar */
+        #mobile-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
         }
-        .logo-fnvj {
-            max-height: 50px;
-            width: auto;
-            object-fit: contain;
+        #mobile-sidebar.open {
+            transform: translateX(0);
         }
-        .logo-tracken-sidebar {
-            max-height: 32px;
-            width: auto;
-            object-fit: contain;
+        #sidebar-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-sm text-gray-700">
 
     <!-- Sidebar Desktop -->
-    <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col h-full hidden md:flex z-20 shrink-0 shadow-sm transition-all duration-300">
+    <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col h-full hidden md:flex z-20 shrink-0 shadow-sm">
         <div class="h-16 flex items-center px-4 border-b border-gray-100">
-            <!-- Logo TRACKen Operacional -->
             <img src="imgi_1_operacional.png" alt="TRACKen Operacional" class="logo-tracken-sidebar" onerror="this.outerHTML='<div class=\'text-2xl font-bold text-tracken-dark flex items-center\'><i class=\'fa-solid fa-location-dot text-tracken-green mr-2\'></i>TRACK<span class=\'text-tracken-green\'>en</span></div>'">
         </div>
         
@@ -165,6 +123,12 @@
                 <a href="#" onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex items-center px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
                     <i class="fa-solid fa-house w-6 text-center mr-2 text-gray-400"></i>
                     <span>Painel</span>
+                </a>
+                
+                <!-- Botão OPERAÇÃO adicionado -->
+                <a href="#" onclick="navigate('operacao')" id="nav-operacao" class="nav-item flex items-center px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <i class="fa-solid fa-folder-open w-6 text-center mr-2 text-gray-400"></i>
+                    <span>Operação</span>
                 </a>
                 
                 <a href="#" class="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
@@ -224,11 +188,63 @@
         </div>
     </aside>
 
+    <!-- Mobile Sidebar (overlay + drawer) -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/50" onclick="toggleMobileSidebar(false)"></div>
+    <aside id="mobile-sidebar" class="fixed top-0 left-0 bottom-0 w-64 bg-white shadow-2xl z-50 flex flex-col md:hidden">
+        <div class="h-16 flex items-center justify-between px-4 border-b border-gray-100">
+            <img src="imgi_1_operacional.png" alt="TRACKen Operacional" class="logo-tracken-sidebar" onerror="this.outerHTML='<div class=\'text-2xl font-bold text-tracken-dark flex items-center\'><i class=\'fa-solid fa-location-dot text-tracken-green mr-2\'></i>TRACK<span class=\'text-tracken-green\'>en</span></div>'">
+            <button onclick="toggleMobileSidebar(false)" class="text-gray-500 hover:text-gray-700">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4">
+            <nav class="space-y-1">
+                <a href="#" onclick="navigate('dashboard'); toggleMobileSidebar(false);" class="nav-item flex items-center px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <i class="fa-solid fa-house w-6 text-center mr-2 text-gray-400"></i>
+                    <span>Painel</span>
+                </a>
+                <a href="#" onclick="navigate('operacao'); toggleMobileSidebar(false);" class="nav-item flex items-center px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <i class="fa-solid fa-folder-open w-6 text-center mr-2 text-gray-400"></i>
+                    <span>Operação</span>
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <div class="flex items-center"><i class="fa-solid fa-building w-6 text-center mr-2 text-gray-400"></i><span>Torre de Operações</span></div>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <div class="flex items-center"><i class="fa-solid fa-cubes w-6 text-center mr-2 text-gray-400"></i><span>WMS TRACKen</span></div>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+                <a href="#" class="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <div class="flex items-center"><i class="fa-solid fa-magnifying-glass w-6 text-center mr-2 text-gray-400"></i><span>Consulta</span></div>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+                <div class="mt-6 mb-2 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ferramentas</div>
+                <a href="#" class="flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <div class="flex items-center"><i class="fa-solid fa-layer-group w-6 text-center mr-2 text-gray-400"></i><span>Sub-Bases</span></div>
+                </a>
+                <a href="#" onclick="navigate('atrasados'); toggleMobileSidebar(false);" class="nav-item flex items-center justify-between px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <div class="flex items-center"><i class="fa-solid fa-clock-rotate-left w-6 text-center mr-2 text-orange-500"></i><span class="font-medium">Pedidos em atraso</span></div>
+                    <span id="sidebar-counter-mobile" class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">0</span>
+                </a>
+                <div class="mt-6 mb-2 px-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sistema</div>
+                <a href="#" class="flex items-center px-4 py-2.5 mx-2 rounded-md text-gray-600 hover:bg-tracken-sidebarHover">
+                    <i class="fa-solid fa-user w-6 text-center mr-2 text-gray-400"></i><span>Minha Conta</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <button onclick="resetDemo(); toggleMobileSidebar(false);" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                <i class="fa-solid fa-rotate-right mr-2"></i> Restaurar Demo
+            </button>
+        </div>
+    </aside>
+
     <main class="flex-1 flex flex-col min-w-0 bg-tracken-bg relative">
         <!-- Top Header -->
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 lg:px-8 z-10 shrink-0">
             <div class="flex items-center">
-                <button class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4">
+                <button id="hamburger-btn" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4" onclick="toggleMobileSidebar(true)">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <div class="hidden sm:block text-gray-400">
@@ -247,50 +263,48 @@
             </div>
         </header>
 
-        <!-- View Containers -->
+        <!-- View Container -->
         <div id="view-container" class="flex-1 overflow-auto p-4 lg:p-6 relative">
-            <!-- Content will be injected here by JS -->
+            <!-- Content injected by JS -->
         </div>
     </main>
 
-    <!-- Partner Action Confirmation Modal -->
-<div id="action-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-80 backdrop-blur-sm">
-    <div class="modal-content bg-gray-900 rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden border border-gray-700">
-        <div class="bg-gray-800 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-white flex items-center">
-                <i class="fa-solid fa-handshake text-emerald-400 mr-2"></i> Acionar Parceiro
-            </h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-200">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div class="flex justify-center mb-6">
-                <!-- Logo Fique no Verde Já - em fundo escuro a logo branca aparece bem -->
-                <img src="imgi_1_logolinhafqnvj.png" alt="Fique no Verde Já" class="logo-fnvj" onerror="this.outerHTML='<div class=\'text-2xl font-bold text-white\'>Fique no <span class=\'text-emerald-400\'>Verde Já</span></div>'">
-            </div>
-            <p class="text-gray-300 mb-4 text-center">
-                Você está prestes a encaminhar <strong id="modal-count" class="text-white font-bold">0</strong> pedido(s) em atraso para tratativa especializada com a equipe Fique no Verde Já.
-            </p>
-            <div class="bg-gray-800 border border-gray-600 rounded p-3 mb-6 flex items-start">
-                <i class="fa-solid fa-circle-info text-blue-400 mt-0.5 mr-2"></i>
-                <p class="text-xs text-gray-300">
-                    O status dos pedidos será alterado para "Encaminhado p/ FNVJ" e o parceiro será notificado automaticamente para iniciar o contato com os clientes.
-                </p>
-            </div>
-            <div class="max-h-32 overflow-y-auto border border-gray-700 rounded text-xs text-gray-400 p-2 bg-gray-800 mb-6" id="modal-order-list">
-                <!-- List injected by JS -->
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 border border-gray-600 rounded text-gray-300 hover:bg-gray-700 font-medium transition">Cancelar</button>
-                <button onclick="confirmPartnerAction()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow-sm font-medium transition flex items-center">
-                    <i class="fa-solid fa-paper-plane mr-2"></i> Confirmar Acionamento
+    <!-- Partner Action Confirmation Modal (fundo preto) -->
+    <div id="action-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="modal-content bg-black rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-700">
+            <div class="bg-gray-900 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fa-solid fa-handshake text-emerald-400 mr-2"></i> Acionar Parceiro
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
+            </div>
+            <div class="p-6">
+                <div class="flex justify-center mb-6">
+                    <img src="imgi_1_logolinhafqnvj.png" alt="Fique no Verde Já" class="logo-fnvj" onerror="this.outerHTML='<div class=\'text-2xl font-bold text-emerald-400\'>Fique no <span class=\'text-white\'>Verde Já</span></div>'">
+                </div>
+                <p class="text-gray-300 mb-4 text-center">
+                    Você está prestes a encaminhar <strong id="modal-count" class="text-white">0</strong> pedido(s) em atraso para tratativa especializada com a equipe Fique no Verde Já.
+                </p>
+                <div class="bg-emerald-900/30 border border-emerald-700 rounded p-3 mb-6 flex items-start">
+                    <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5 mr-2"></i>
+                    <p class="text-xs text-emerald-200">
+                        O status dos pedidos será alterado para "Encaminhado p/ FNVJ" e o parceiro será notificado automaticamente para iniciar o contato com os clientes.
+                    </p>
+                </div>
+                <div class="max-h-32 overflow-y-auto border border-gray-700 rounded text-xs text-gray-300 p-2 bg-gray-800 mb-6" id="modal-order-list">
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal()" class="px-4 py-2 border border-gray-600 rounded text-gray-300 hover:bg-gray-700 font-medium transition">Cancelar</button>
+                    <button onclick="confirmPartnerAction()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-sm font-medium transition flex items-center">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Confirmar Acionamento
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Right Drawer for Order History -->
     <div id="drawer-overlay" class="drawer-overlay fixed inset-0 z-40 bg-gray-900 bg-opacity-30" onclick="closeDrawer()"></div>
@@ -301,12 +315,8 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        <div class="flex-1 overflow-y-auto p-6" id="drawer-content">
-            <!-- Content injected by JS -->
-        </div>
-        <div class="p-4 border-t border-gray-100 bg-gray-50" id="drawer-footer">
-            <!-- Simulation button injected here -->
-        </div>
+        <div class="flex-1 overflow-y-auto p-6" id="drawer-content"></div>
+        <div class="p-4 border-t border-gray-100 bg-gray-50" id="drawer-footer"></div>
     </div>
 
     <script>
@@ -327,41 +337,47 @@
             'Resolvido'
         ];
 
-        // State variables
         let orders = [];
         let selectedOrderIds = new Set();
         let currentView = 'dashboard';
         let currentOrderIdInDrawer = null;
 
-        // Initialize Data
+        // --- Mobile Sidebar Toggle ---
+        function toggleMobileSidebar(open) {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (open) {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // --- Data ---
         function initData() {
             const storedData = localStorage.getItem('tracken_fnvj_demo_data');
             if (storedData) {
-                try {
-                    orders = JSON.parse(storedData);
-                } catch (e) {
-                    console.error("Error parsing stored data, generating new.");
-                    generateMockData();
-                }
-            } else {
-                generateMockData();
-            }
+                try { orders = JSON.parse(storedData); } catch(e) { generateMockData(); }
+            } else { generateMockData(); }
             updateSidebarCounter();
         }
 
         function generateMockData() {
             orders = [];
             const today = new Date();
-            const names = ["João Silva", "Maria Oliveira", "Carlos Santos", "Ana Costa", "Pedro Almeida", "Lucia Ferreira", "Roberto Gomes", "Camila Rocha", "Fernanda Lima", "Lucas Souza"];
-            
+            const names = [
+                "Loja do Zé", "Mercado Bom Preço", "EletroMax", "Casa & Construção",
+                "Moda Jovem", "Distribuidora Paulista", "Supermercado Santos",
+                "Livraria Cultura", "Farmácia Popular", "Papelaria Escolar"
+            ];
             for (let i = 1; i <= 35; i++) {
                 const daysLate = Math.floor(Math.random() * 10) + 1;
                 let dueDate = new Date();
                 dueDate.setDate(today.getDate() - daysLate);
-                
                 const mp = MARKETPLACES[Math.floor(Math.random() * MARKETPLACES.length)];
-                
-                const order = {
+                orders.push({
                     id: `ORD-${1000 + i}`,
                     pedido: `15567701186${Math.floor(Math.random() * 90000 + 10000)}`,
                     remessa: `6076${Math.floor(Math.random() * 90000 + 10000)}`,
@@ -375,8 +391,7 @@
                         { date: formatDateFull(dueDate), action: 'Previsão de entrega original', type: 'system' },
                         { date: formatDateFull(today, -1), action: 'Atraso identificado sistemicamente', type: 'system' }
                     ]
-                };
-                orders.push(order);
+                });
             }
             saveData();
         }
@@ -393,7 +408,6 @@
             closeModal();
             initData();
             navigate(currentView);
-            
             const toast = document.createElement('div');
             toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300';
             toast.innerText = 'Demonstração restaurada com sucesso.';
@@ -401,11 +415,7 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2000);
         }
 
-        // --- Utility Functions ---
-        function formatDate(date) {
-            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
-        
+        function formatDate(date) { return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
         function formatDateFull(date, hourOffset = 0) {
             const d = new Date(date);
             d.setHours(d.getHours() + hourOffset);
@@ -421,8 +431,17 @@
             }
         }
 
-        // --- Navigation & Rendering ---
-        
+        function updateSidebarCounter() {
+            const count = orders.filter(o => o.status === 'Atraso identificado').length;
+            document.getElementById('sidebar-counter').innerText = count;
+            document.getElementById('sidebar-counter-mobile').innerText = count;
+            ['sidebar-counter', 'sidebar-counter-mobile'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.display = count > 0 ? 'inline-block' : 'none';
+            });
+        }
+
+        // --- Navigation ---
         function navigate(view) {
             currentView = view;
             const container = document.getElementById('view-container');
@@ -432,25 +451,15 @@
                 el.classList.remove('bg-tracken-active', 'border-l-4', 'border-tracken-green');
                 el.classList.add('text-gray-600', 'hover:bg-tracken-sidebarHover');
             });
-            
             const activeNav = document.getElementById(`nav-${view}`);
             if(activeNav) {
                 activeNav.classList.remove('text-gray-600', 'hover:bg-tracken-sidebarHover');
                 activeNav.classList.add('bg-tracken-active', 'border-l-4', 'border-tracken-green', 'text-tracken-dark');
             }
 
-            if (view === 'dashboard') {
-                renderDashboard(container);
-            } else if (view === 'atrasados') {
-                renderAtrasados(container);
-            }
-        }
-
-        function updateSidebarCounter() {
-            const count = orders.filter(o => o.status === 'Atraso identificado').length;
-            const badge = document.getElementById('sidebar-counter');
-            badge.innerText = count;
-            badge.style.display = count > 0 ? 'inline-block' : 'none';
+            if (view === 'dashboard') renderDashboard(container);
+            else if (view === 'operacao') renderOperacao(container);
+            else if (view === 'atrasados') renderAtrasados(container);
         }
 
         function renderDashboard(container) {
@@ -459,76 +468,40 @@
             
             container.innerHTML = `
                 <div class="flex justify-between items-end mb-6">
-                    <div>
-                        <h1 class="text-2xl font-semibold text-gray-800">Painel</h1>
-                        <p class="text-gray-500 text-sm mt-1">Terça-feira, 28 de julho de 2026</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50"><i class="fa-regular fa-calendar mr-2"></i> 28/07/2026</button>
-                    </div>
+                    <div><h1 class="text-2xl font-semibold text-gray-800">Painel</h1><p class="text-gray-500 text-sm mt-1">Terça-feira, 28 de julho de 2026</p></div>
+                    <div class="flex space-x-2"><button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded shadow-sm hover:bg-gray-50"><i class="fa-regular fa-calendar mr-2"></i> 28/07/2026</button></div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-gray-200">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Importados <i class="fa-solid fa-box text-gray-400"></i></p>
-                        <p class="text-2xl font-bold text-gray-700">853</p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-blue-400">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Recebidos <i class="fa-solid fa-clipboard-check text-blue-400"></i></p>
-                        <p class="text-2xl font-bold text-blue-500">31</p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-purple-500">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Em Rota <i class="fa-solid fa-truck text-purple-500"></i></p>
-                        <p class="text-2xl font-bold text-purple-600">1</p>
-                    </div>
-                    
+                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-gray-200"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Importados <i class="fa-solid fa-box text-gray-400"></i></p><p class="text-2xl font-bold text-gray-700">853</p></div>
+                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-blue-400"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Recebidos <i class="fa-solid fa-clipboard-check text-blue-400"></i></p><p class="text-2xl font-bold text-blue-500">31</p></div>
+                    <div class="bg-white rounded-lg shadow-card p-4 border-t-4 border-purple-500"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Em Rota <i class="fa-solid fa-truck text-purple-500"></i></p><p class="text-2xl font-bold text-purple-600">1</p></div>
                     <div class="bg-white rounded-lg shadow-card p-5 border-l-4 border-red-500 relative overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer" onclick="navigate('atrasados')">
                         <div class="absolute -right-4 -top-4 w-16 h-16 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                        <p class="text-xs text-red-500 font-bold uppercase tracking-wide mb-2 flex items-center">
-                            <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Ação Requerida
-                        </p>
+                        <p class="text-xs text-red-500 font-bold uppercase tracking-wide mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Ação Requerida</p>
                         <h3 class="text-gray-800 font-semibold text-lg leading-tight mb-1">Pedidos em Atraso</h3>
-                        <div class="flex items-baseline space-x-2">
-                            <span class="text-3xl font-bold text-red-600">${totalAtrasados}</span>
-                            <span class="text-sm text-gray-500">pendentes</span>
-                        </div>
+                        <div class="flex items-baseline space-x-2"><span class="text-3xl font-bold text-red-600">${totalAtrasados}</span><span class="text-sm text-gray-500">pendentes</span></div>
                         ${totalEmAtendimento > 0 ? `<p class="text-xs text-fnvj-dark mt-2 font-medium bg-emerald-50 inline-block px-2 py-0.5 rounded border border-emerald-100"><i class="fa-solid fa-leaf mr-1"></i> ${totalEmAtendimento} em tratativa</p>` : ''}
-                        
-                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-tracken-green font-medium text-sm group-hover:text-green-600 transition-colors">
-                            <span>Acessar painel de gestão</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </div>
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-tracken-green font-medium text-sm group-hover:text-green-600 transition-colors"><span>Acessar painel de gestão</span><i class="fa-solid fa-arrow-right"></i></div>
                     </div>
-
-                    <div class="bg-tracken-green rounded-lg shadow-card p-4 text-white">
-                        <p class="text-xs text-green-100 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Pedidos <i class="fa-solid fa-box-open text-green-200"></i></p>
-                        <p class="text-2xl font-bold">15038</p>
-                        <p class="text-xs text-green-100 mt-1">Total do dia</p>
-                    </div>
+                    <div class="bg-tracken-green rounded-lg shadow-card p-4 text-white"><p class="text-xs text-green-100 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Pedidos <i class="fa-solid fa-box-open text-green-200"></i></p><p class="text-2xl font-bold">15038</p><p class="text-xs text-green-100 mt-1">Total do dia</p></div>
                 </div>
-                
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-lg shadow-card p-5">
-                        <h3 class="text-gray-700 font-semibold mb-1">Baixas por Hora</h3>
-                        <p class="text-xs text-gray-400 mb-6">Distribuição das baixas ao longo do dia</p>
-                        <div class="h-48 flex items-end justify-between space-x-1">
-                            ${Array.from({length: 24}).map((_, i) => `<div class="w-full bg-blue-400 rounded-t-sm" style="height: ${i > 6 && i < 22 ? Math.random() * 80 + 20 : Math.random() * 10}%"></div>`).join('')}
-                        </div>
-                        <div class="flex justify-between text-[10px] text-gray-400 mt-2">
-                            <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>23h</span>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-card p-5">
-                        <h3 class="text-gray-700 font-semibold mb-1">Status das Entregas</h3>
-                        <p class="text-xs text-gray-400 mb-6">Distribuição atual dos status</p>
-                        <div class="h-48 flex items-end justify-around px-10 space-x-4">
-                             <div class="w-12 bg-teal-400 rounded-t" style="height: 60%"></div>
-                             <div class="w-12 bg-yellow-400 rounded-t" style="height: 80%"></div>
-                             <div class="w-12 bg-pink-400 rounded-t" style="height: 70%"></div>
-                             <div class="w-12 bg-purple-400 rounded-t" style="height: 50%"></div>
-                             <div class="w-12 bg-blue-500 rounded-t" style="height: 90%"></div>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-lg shadow-card p-5"><h3 class="text-gray-700 font-semibold mb-1">Baixas por Hora</h3><p class="text-xs text-gray-400 mb-6">Distribuição das baixas ao longo do dia</p><div class="h-48 flex items-end justify-between space-x-1">${Array.from({length:24}).map((_,i)=>`<div class="w-full bg-blue-400 rounded-t-sm" style="height: ${i>6&&i<22?Math.random()*80+20:Math.random()*10}%"></div>`).join('')}</div><div class="flex justify-between text-[10px] text-gray-400 mt-2"><span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>23h</span></div></div>
+                    <div class="bg-white rounded-lg shadow-card p-5"><h3 class="text-gray-700 font-semibold mb-1">Status das Entregas</h3><p class="text-xs text-gray-400 mb-6">Distribuição atual dos status</p><div class="h-48 flex items-end justify-around px-10 space-x-4"><div class="w-12 bg-teal-400 rounded-t" style="height:60%"></div><div class="w-12 bg-yellow-400 rounded-t" style="height:80%"></div><div class="w-12 bg-pink-400 rounded-t" style="height:70%"></div><div class="w-12 bg-purple-400 rounded-t" style="height:50%"></div><div class="w-12 bg-blue-500 rounded-t" style="height:90%"></div></div></div>
+                </div>
+            `;
+        }
+
+        function renderOperacao(container) {
+            container.innerHTML = `
+                <div class="mb-6">
+                    <div class="text-sm text-gray-400 mb-1 flex items-center">Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">Operação</span></div>
+                    <h1 class="text-2xl font-semibold text-gray-800">Operação</h1>
+                </div>
+                <div class="bg-white rounded-lg shadow-card p-8 text-center text-gray-500">
+                    <i class="fa-solid fa-folder-open text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-lg font-medium">Módulo em construção</p>
+                    <p class="text-sm">Aqui serão exibidas as operações e consultas.</p>
                 </div>
             `;
         }
@@ -541,35 +514,15 @@
 
             container.innerHTML = `
                 <div class="mb-6">
-                    <div class="text-sm text-gray-400 mb-1 flex items-center">
-                        Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">Gestão de Atrasos</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
-                            Pedidos em Atraso
-                        </h1>
-                    </div>
+                    <div class="text-sm text-gray-400 mb-1 flex items-center">Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">Gestão de Atrasos</span></div>
+                    <div class="flex justify-between items-center"><h1 class="text-2xl font-semibold text-gray-800 flex items-center">Pedidos em Atraso</h1></div>
                 </div>
-
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded p-4 border border-gray-200 shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">Identificados</div>
-                        <div class="text-xl font-bold text-gray-800">${pendentes}</div>
-                    </div>
-                    <div class="bg-white rounded p-4 border border-blue-200 shadow-sm bg-blue-50">
-                        <div class="text-xs text-blue-600 mb-1">Encaminhados</div>
-                        <div class="text-xl font-bold text-blue-700">${encaminhadosHoje}</div>
-                    </div>
-                    <div class="bg-white rounded p-4 border border-orange-200 shadow-sm bg-orange-50">
-                        <div class="text-xs text-orange-600 mb-1">Em Atendimento</div>
-                        <div class="text-xl font-bold text-orange-700">${emAtendimento}</div>
-                    </div>
-                    <div class="bg-white rounded p-4 border border-green-200 shadow-sm bg-green-50">
-                        <div class="text-xs text-green-600 mb-1">Resolvidos (Sucesso)</div>
-                        <div class="text-xl font-bold text-green-700">${resolvidos}</div>
-                    </div>
+                    <div class="bg-white rounded p-4 border border-gray-200 shadow-sm"><div class="text-xs text-gray-500 mb-1">Identificados</div><div class="text-xl font-bold text-gray-800">${pendentes}</div></div>
+                    <div class="bg-white rounded p-4 border border-blue-200 shadow-sm bg-blue-50"><div class="text-xs text-blue-600 mb-1">Encaminhados</div><div class="text-xl font-bold text-blue-700">${encaminhadosHoje}</div></div>
+                    <div class="bg-white rounded p-4 border border-orange-200 shadow-sm bg-orange-50"><div class="text-xs text-orange-600 mb-1">Em Atendimento</div><div class="text-xl font-bold text-orange-700">${emAtendimento}</div></div>
+                    <div class="bg-white rounded p-4 border border-green-200 shadow-sm bg-green-50"><div class="text-xs text-green-600 mb-1">Resolvidos (Sucesso)</div><div class="text-xl font-bold text-green-700">${resolvidos}</div></div>
                 </div>
-
                 <div class="bg-white p-3 rounded-t border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="flex space-x-2 w-full sm:w-auto">
                         <select id="filter-status" onchange="renderTableRows()" class="border border-gray-300 text-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-tracken-green w-full sm:w-auto">
@@ -589,7 +542,6 @@
                             <option value="Amazon">Amazon</option>
                         </select>
                     </div>
-                    
                     <div class="flex items-center w-full sm:w-auto justify-between sm:justify-end">
                         <span class="text-sm text-gray-500 mr-4 hidden sm:inline"><span id="selected-count-label">0</span> selecionado(s)</span>
                         <button id="btn-acionar" onclick="openActionModal()" disabled class="bg-fnvj-green hover:bg-emerald-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded text-sm font-medium shadow-sm transition-colors flex items-center">
@@ -597,29 +549,22 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="bg-white rounded-b shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="table-header-dark text-xs tracking-wider">
-                                    <th class="p-3 w-12 text-center">
-                                        <input type="checkbox" id="selectAll" class="custom-checkbox" onchange="toggleSelectAll(this)">
-                                    </th>
-                                    <th class="p-3 font-medium">REMESSA / PEDIDO</th>
-                                    <th class="p-3 font-medium">MARKETPLACE</th>
-                                    <th class="p-3 font-medium">CLIENTE</th>
-                                    <th class="p-3 font-medium">DATA PREV.</th>
-                                    <th class="p-3 font-medium text-center">ATRASO</th>
-                                    <th class="p-3 font-medium">STATUS</th>
-                                    <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body" class="text-sm">
-                            </tbody>
+                            <thead><tr class="table-header-dark text-xs tracking-wider">
+                                <th class="p-3 w-12 text-center"><input type="checkbox" id="selectAll" class="custom-checkbox" onchange="toggleSelectAll(this)"></th>
+                                <th class="p-3 font-medium">REMESSA / PEDIDO</th>
+                                <th class="p-3 font-medium">MARKETPLACE</th>
+                                <th class="p-3 font-medium">CLIENTE</th>
+                                <th class="p-3 font-medium">DATA PREV.</th>
+                                <th class="p-3 font-medium text-center">ATRASO</th>
+                                <th class="p-3 font-medium">STATUS</th>
+                                <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
+                            </tr></thead>
+                            <tbody id="table-body"></tbody>
                         </table>
                     </div>
-                    
                     <div class="p-4 border-t border-gray-100 flex items-center justify-between text-gray-500 text-xs">
                         <div>Mostrando 1 a ${orders.length} de ${orders.length} registros</div>
                         <div class="flex space-x-1">
@@ -636,80 +581,38 @@
         function renderTableRows() {
             const tbody = document.getElementById('table-body');
             if(!tbody) return;
-            
             tbody.innerHTML = '';
-            
-            const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'all';
-            const mpFilter = document.getElementById('filter-marketplace') ? document.getElementById('filter-marketplace').value : 'all';
-
-            let filteredOrders = orders.filter(o => {
-                const matchStatus = statusFilter === 'all' || o.status === statusFilter;
-                const matchMp = mpFilter === 'all' || o.marketplace.name === mpFilter;
-                return matchStatus && matchMp;
-            });
-            
-            const sortedOrders = [...filteredOrders].sort((a, b) => {
+            const statusFilter = document.getElementById('filter-status')?.value || 'all';
+            const mpFilter = document.getElementById('filter-marketplace')?.value || 'all';
+            let filteredOrders = orders.filter(o => (statusFilter === 'all' || o.status === statusFilter) && (mpFilter === 'all' || o.marketplace.name === mpFilter));
+            const sortedOrders = [...filteredOrders].sort((a,b) => {
                 if(a.status === 'Atraso identificado' && b.status !== 'Atraso identificado') return -1;
                 if(a.status !== 'Atraso identificado' && b.status === 'Atraso identificado') return 1;
                 return b.diasAtraso - a.diasAtraso;
             });
-
-            sortedOrders.forEach((order, index) => {
+            sortedOrders.forEach(order => {
                 const isSelected = selectedOrderIds.has(order.id);
                 const isActionable = order.status === 'Atraso identificado';
-                
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-100 table-row-hover transition-colors relative';
-                
                 tr.innerHTML = `
-                    <td class="p-3 text-center">
-                        <input type="checkbox" class="custom-checkbox row-checkbox" 
-                            value="${order.id}" 
-                            ${isSelected ? 'checked' : ''} 
-                            ${!isActionable ? 'disabled' : ''}
-                            onchange="toggleRowSelection('${order.id}', this.checked)">
-                    </td>
-                    <td class="p-3">
-                        <div class="font-medium text-gray-800">${order.remessa}</div>
-                        <div class="text-xs text-gray-500">${order.pedido}</div>
-                    </td>
-                    <td class="p-3">
-                        <span class="${order.marketplace.color} text-[10px] font-bold px-2 py-1 rounded shadow-sm inline-block w-16 text-center leading-none">
-                            ${order.marketplace.logo}
-                        </span>
-                    </td>
-                    <td class="p-3">
-                        <div class="text-gray-800 truncate w-32 md:w-auto" title="${order.cliente}">${order.cliente}</div>
-                    </td>
+                    <td class="p-3 text-center"><input type="checkbox" class="custom-checkbox row-checkbox" value="${order.id}" ${isSelected?'checked':''} ${!isActionable?'disabled':''} onchange="toggleRowSelection('${order.id}', this.checked)"></td>
+                    <td class="p-3"><div class="font-medium text-gray-800">${order.remessa}</div><div class="text-xs text-gray-500">${order.pedido}</div></td>
+                    <td class="p-3"><span class="${order.marketplace.color} text-[10px] font-bold px-2 py-1 rounded shadow-sm inline-block w-16 text-center leading-none">${order.marketplace.logo}</span></td>
+                    <td class="p-3"><div class="text-gray-800 truncate w-32 md:w-auto" title="${order.cliente}">${order.cliente}</div></td>
                     <td class="p-3 text-gray-600">${order.dataPrevista}</td>
-                    <td class="p-3 text-center">
-                        <span class="font-bold text-red-500">${order.diasAtraso} dias</span>
-                    </td>
-                    <td class="p-3">
-                        <span class="px-2.5 py-1 text-xs rounded-md border ${getStatusColor(order.status)} font-medium inline-flex items-center">
-                            ${order.status === 'Atraso identificado' ? '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i>' : ''}
-                            ${order.status === 'Encaminhado p/ FNVJ' ? '<i class="fa-solid fa-paper-plane mr-1.5"></i>' : ''}
-                            ${order.status === 'Resolvido' ? '<i class="fa-solid fa-check-double mr-1.5"></i>' : ''}
-                            ${order.status}
-                        </span>
-                    </td>
+                    <td class="p-3 text-center"><span class="font-bold text-red-500">${order.diasAtraso} dias</span></td>
+                    <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-md border ${getStatusColor(order.status)} font-medium inline-flex items-center">${order.status}</span></td>
                     <td class="p-3 text-center relative">
-                        <button onclick="toggleActionMenu('${order.id}', event)" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none">
-                            <i class="fa-solid fa-ellipsis-vertical"></i>
-                        </button>
+                        <button onclick="toggleActionMenu('${order.id}', event)" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         <div id="menu-${order.id}" class="action-menu absolute right-8 top-8 w-36 bg-white border border-gray-200 shadow-lg rounded-md z-10 text-left overflow-hidden">
-                            <button onclick="openDrawer('${order.id}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
-                                <i class="fa-solid fa-timeline w-5 text-gray-400"></i> Ver histórico
-                            </button>
-                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
-                                <i class="fa-solid fa-circle-info w-5 text-gray-400"></i> Detalhes
-                            </button>
+                            <button onclick="openDrawer('${order.id}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-timeline w-5 text-gray-400"></i> Ver histórico</button>
+                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-circle-info w-5 text-gray-400"></i> Detalhes</button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-            
             updateSelectionState();
         }
 
@@ -721,16 +624,12 @@
 
         function toggleActionMenu(id, event) {
             event.stopPropagation();
-            document.querySelectorAll('.action-menu').forEach(menu => {
-                if(menu.id !== `menu-${id}`) menu.classList.remove('active');
-            });
-            const menu = document.getElementById(`menu-${id}`);
-            if(menu) menu.classList.toggle('active');
+            document.querySelectorAll('.action-menu').forEach(menu => { if(menu.id !== `menu-${id}`) menu.classList.remove('active'); });
+            document.getElementById(`menu-${id}`)?.classList.toggle('active');
         }
 
         function toggleSelectAll(checkbox) {
-            const rowCheckboxes = document.querySelectorAll('.row-checkbox:not([disabled])');
-            rowCheckboxes.forEach(cb => {
+            document.querySelectorAll('.row-checkbox:not([disabled])').forEach(cb => {
                 cb.checked = checkbox.checked;
                 if(checkbox.checked) selectedOrderIds.add(cb.value);
                 else selectedOrderIds.delete(cb.value);
@@ -742,12 +641,10 @@
             if(isChecked) selectedOrderIds.add(id);
             else selectedOrderIds.delete(id);
             updateSelectionState();
-            
             const allEnabled = document.querySelectorAll('.row-checkbox:not([disabled])');
             const selectAllCb = document.getElementById('selectAll');
             if(selectAllCb && allEnabled.length > 0) {
-                const allChecked = Array.from(allEnabled).every(cb => cb.checked);
-                selectAllCb.checked = allChecked;
+                selectAllCb.checked = Array.from(allEnabled).every(cb => cb.checked);
             }
         }
 
@@ -758,77 +655,50 @@
                 const count = selectedOrderIds.size;
                 btn.disabled = count === 0;
                 lbl.innerText = count;
-                if(count > 0) {
-                    btn.classList.add('animate-pulse-once');
-                }
             }
         }
 
         function openActionModal() {
             if(selectedOrderIds.size === 0) return;
-            
             document.getElementById('modal-count').innerText = selectedOrderIds.size;
-            
             const listContainer = document.getElementById('modal-order-list');
             listContainer.innerHTML = '';
-            
             let previewIds = Array.from(selectedOrderIds).slice(0, 3);
             previewIds.forEach(id => {
                 const order = orders.find(o => o.id === id);
-                if(order) {
-                    listContainer.innerHTML += `<div class="py-1 border-b border-gray-100 last:border-0"><span class="font-medium text-gray-700">Remessa:</span> ${order.remessa} - <span class="font-medium text-gray-700">Cliente:</span> ${order.cliente}</div>`;
-                }
+                if(order) listContainer.innerHTML += `<div class="py-1 border-b border-gray-700 last:border-0"><span class="font-medium text-gray-200">Remessa:</span> ${order.remessa} - <span class="font-medium text-gray-200">Cliente:</span> ${order.cliente}</div>`;
             });
-            if(selectedOrderIds.size > 3) {
-                listContainer.innerHTML += `<div class="py-1 text-center italic mt-1">... e mais ${selectedOrderIds.size - 3} pedido(s)</div>`;
-            }
-
+            if(selectedOrderIds.size > 3) listContainer.innerHTML += `<div class="py-1 text-center italic mt-1">... e mais ${selectedOrderIds.size - 3} pedido(s)</div>`;
             document.getElementById('action-modal').classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('action-modal').classList.remove('active');
-        }
+        function closeModal() { document.getElementById('action-modal').classList.remove('active'); }
 
         function confirmPartnerAction() {
             const now = new Date();
-            
             orders = orders.map(order => {
                 if(selectedOrderIds.has(order.id)) {
                     const updatedOrder = {...order};
                     updatedOrder.status = 'Encaminhado p/ FNVJ';
-                    updatedOrder.historico.push({
-                        date: formatDateFull(now),
-                        action: 'Acionamento de parceiro especialista (Fique no Verde Já)',
-                        type: 'partner_init'
-                    });
+                    updatedOrder.historico.push({ date: formatDateFull(now), action: 'Acionamento de parceiro especialista (Fique no Verde Já)', type: 'partner_init' });
                     return updatedOrder;
                 }
                 return order;
             });
-
             saveData();
             selectedOrderIds.clear();
             closeModal();
-            
-            if(currentView === 'atrasados') {
-                renderAtrasados(document.getElementById('view-container'));
-            } else {
-                updateSidebarCounter();
-            }
+            if(currentView === 'atrasados') renderAtrasados(document.getElementById('view-container'));
+            else updateSidebarCounter();
         }
 
         function openDrawer(orderId) {
             currentOrderIdInDrawer = orderId;
             const order = orders.find(o => o.id === orderId);
             if(!order) return;
-
             document.querySelectorAll('.action-menu').forEach(menu => menu.classList.remove('active'));
-
             document.getElementById('drawer-title').innerText = `Remessa: ${order.remessa}`;
-            
             renderDrawerContent(order);
-            
             document.getElementById('drawer-overlay').classList.add('active');
             document.getElementById('drawer-panel').classList.add('active');
         }
@@ -842,7 +712,6 @@
         function renderDrawerContent(order) {
             const content = document.getElementById('drawer-content');
             const footer = document.getElementById('drawer-footer');
-            
             let html = `
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6 shadow-sm">
                     <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
@@ -850,34 +719,26 @@
                         <div><span class="text-gray-500 block text-xs uppercase">Marketplace</span> <span class="font-medium">${order.marketplace.name}</span></div>
                         <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">Cliente</span> <span class="font-medium">${order.cliente}</span> <span class="text-gray-400 ml-2">${order.telefone}</span></div>
                         <div><span class="text-gray-500 block text-xs uppercase">Previsão</span> <span class="font-medium">${order.dataPrevista}</span></div>
-                        <div><span class="text-gray-500 block text-xs uppercase">Status Atual</span> 
-                            <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getStatusColor(order.status)} font-medium inline-block">${order.status}</span>
-                        </div>
+                        <div><span class="text-gray-500 block text-xs uppercase">Status Atual</span> <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getStatusColor(order.status)} font-medium inline-block">${order.status}</span></div>
                     </div>
                 </div>
                 <h3 class="font-semibold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-list-ul mr-2 text-gray-400"></i> Histórico do Pedido</h3>
                 <div class="timeline-container">
             `;
-
             [...order.historico].reverse().forEach((event, index) => {
                 const isNewest = index === 0;
                 const isPartnerEvent = event.type === 'partner_init' || event.type === 'partner_action';
-                
                 html += `
                     <div class="timeline-item">
                         <div class="timeline-dot ${isNewest ? (isPartnerEvent ? 'partner' : 'active') : ''}"></div>
                         <div class="ml-2 bg-white border ${isNewest ? 'border-gray-300 shadow-sm' : 'border-gray-100'} p-3 rounded-lg relative">
                             ${isNewest ? `<span class="absolute -left-1.5 top-3 w-3 h-3 bg-white border-l border-b ${isNewest ? 'border-gray-300' : 'border-gray-100'} transform rotate-45"></span>` : ''}
-                            <div class="text-xs text-gray-500 mb-1 flex justify-between">
-                                <span>${event.date}</span>
-                                ${isPartnerEvent ? '<span class="text-fnvj-green font-medium"><i class="fa-solid fa-leaf"></i> FNVJ</span>' : '<span class="text-gray-400"><i class="fa-solid fa-robot"></i> Sistema</span>'}
-                            </div>
+                            <div class="text-xs text-gray-500 mb-1 flex justify-between"><span>${event.date}</span>${isPartnerEvent ? '<span class="text-fnvj-green font-medium"><i class="fa-solid fa-leaf"></i> FNVJ</span>' : '<span class="text-gray-400"><i class="fa-solid fa-robot"></i> Sistema</span>'}</div>
                             <div class="text-sm font-medium ${isPartnerEvent ? 'text-gray-800' : 'text-gray-700'}">${event.action}</div>
                         </div>
                     </div>
                 `;
             });
-
             html += `</div>`;
             content.innerHTML = html;
 
@@ -899,17 +760,13 @@
 
         function simularAvanco() {
             if(!currentOrderIdInDrawer) return;
-            
             const orderIndex = orders.findIndex(o => o.id === currentOrderIdInDrawer);
             if(orderIndex === -1) return;
-            
             const order = orders[orderIndex];
             const currentIndex = STATUS_FLOW.indexOf(order.status);
-            
             if (currentIndex < STATUS_FLOW.length - 1) {
                 const nextStatus = STATUS_FLOW[currentIndex + 1];
                 order.status = nextStatus;
-                
                 let actionText = '';
                 switch(nextStatus) {
                     case 'Em atendimento': actionText = 'Analista parceiro iniciou tratativa'; break;
@@ -917,35 +774,16 @@
                     case 'Tratativa concluída': actionText = 'Acordo de nova entrega / resolução alinhada com cliente'; break;
                     case 'Resolvido': actionText = 'Pedido finalizado. Baixa de ocorrência efetuada.'; break;
                 }
-
-                order.historico.push({
-                    date: formatDateFull(new Date()),
-                    action: actionText,
-                    type: nextStatus === 'Resolvido' ? 'system' : 'partner_action'
-                });
-                
+                order.historico.push({ date: formatDateFull(new Date()), action: actionText, type: nextStatus === 'Resolvido' ? 'system' : 'partner_action' });
                 saveData();
                 renderDrawerContent(order);
-                
-                if(currentView === 'atrasados') {
-                    renderAtrasados(document.getElementById('view-container'));
-                }
+                if(currentView === 'atrasados') renderAtrasados(document.getElementById('view-container'));
             }
         }
 
         window.onload = function() {
             initData();
             navigate('dashboard');
-            
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @keyframes pulse-once {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.05); box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.5); }
-                }
-                .animate-pulse-once { animation: pulse-once 0.5s ease-in-out; }
-            `;
-            document.head.appendChild(style);
         };
     </script>
 </body>
