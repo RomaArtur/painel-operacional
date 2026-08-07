@@ -228,6 +228,32 @@
       .nav-item-active i {
         color: #ffffff !important;
       }
+
+      /* Submenu items */
+      .submenu-item {
+        padding-left: 2.75rem !important;
+        font-size: 0.8rem;
+      }
+      .submenu-item i {
+        width: 1.25rem;
+        text-align: center;
+        margin-right: 0.75rem;
+        color: #9ca3af;
+      }
+      .nav-group-toggle .fa-chevron-right {
+        transition: transform 0.2s ease;
+      }
+      .nav-group-toggle.open .fa-chevron-right {
+        transform: rotate(90deg);
+      }
+      .submenu-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease;
+      }
+      .submenu-container.open {
+        max-height: 400px;
+      }
     </style>
   </head>
   <body
@@ -305,19 +331,100 @@
             <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
           </a>
 
-          <!-- OPERAÇÃO -->
-          <a
-            href="#"
-            class="flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-          >
-            <div class="flex items-center">
+          <!-- OPERAÇÃO (grupo expansível) -->
+          <!-- OPERAÇÃO (grupo expansível) -->
+          <div class="nav-group">
+            <a
+              href="#"
+              class="nav-group-toggle flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+              onclick="toggleNavGroup(this)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa-solid fa-chart-simple w-5 text-center mr-3 text-gray-500"
+                ></i>
+                <span>Operação</span>
+              </div>
               <i
-                class="fa-solid fa-chart-simple w-5 text-center mr-3 text-gray-500"
+                class="fa-solid fa-chevron-right text-xs text-gray-400 transition-transform"
               ></i>
-              <span>Operação</span>
+            </a>
+            <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="navigate('operacao-entrada')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrada
+              </a>
+              <a
+                href="#"
+                onclick="navigate('operacao-saida')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Saída
+              </a>
+              <a
+                href="#"
+                onclick="navigate('operacao-devolucao')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-rotate-left"></i> Devolução
+              </a>
+              <a
+                href="#"
+                onclick="navigate('operacao-alteracoes')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-pen-to-square"></i> Alterações
+              </a>
+              <a
+                href="#"
+                onclick="navigate('operacao-baixas')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-check-double"></i> Baixas
+              </a>
             </div>
-            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
-          </a>
+          </div>
+
+          <!-- SAC (grupo expansível) - AGORA AQUI, ANTES DE FERRAMENTAS -->
+          <div class="nav-group">
+            <a
+              href="#"
+              class="nav-group-toggle flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+              onclick="toggleNavGroup(this)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa-solid fa-headset w-5 text-center mr-3 text-gray-500"
+                ></i>
+                <span>SAC</span>
+              </div>
+              <i
+                class="fa-solid fa-chevron-right text-xs text-gray-400 transition-transform"
+              ></i>
+            </a>
+            <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="navigate('sac-chamados')"
+                id="nav-sac-chamados"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-ticket"></i> Chamados
+              </a>
+              <a
+                href="#"
+                onclick="navigate('sac-reputacao')"
+                id="nav-sac-reputacao"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-clock-rotate-left"></i> Controle de
+                Reputação
+              </a>
+            </div>
+          </div>
 
           <div
             class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
@@ -325,7 +432,7 @@
             Ferramentas
           </div>
 
-          <!-- Sub-Bases - SEM ARTE -->
+          <!-- Sub-Bases -->
           <a
             href="#"
             class="flex items-center px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
@@ -335,43 +442,6 @@
             ></i>
             <span>Sub-Bases</span>
           </a>
-
-          <!-- Pedidos em atraso - COM ARTE DE NOVO E TOOLTIP GLOBAL -->
-          <a
-            href="#"
-            onclick="navigate('atrasados')"
-            id="nav-atrasados"
-            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-            data-title="Visão estratégica de atrasos!"
-            data-desc="Tenha uma visão centralizada dos pedidos em atraso e acompanhe a evolução das tratativas com sua transportadora."
-            data-sub="A gestão integrada permite o encaminhamento direto para parceiros estratégicos."
-            onmouseenter="showTooltip(event, this)"
-            onmouseleave="hideTooltip()"
-          >
-            <div class="flex items-center">
-              <i
-                class="fa-solid fa-clock-rotate-left w-5 text-center mr-3 text-orange-500"
-              ></i>
-              <span class="font-medium">Pedidos em atraso</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span
-                id="sidebar-counter"
-                class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm"
-                >0</span
-              >
-              <span
-                class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm"
-                >N</span
-              >
-            </div>
-          </a>
-
-          <div
-            class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
-          >
-            Sistema
-          </div>
 
           <!-- Minha Conta -->
           <a
@@ -472,18 +542,120 @@
             </div>
             <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
           </a>
-          <a
-            href="#"
-            class="flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-          >
-            <div class="flex items-center">
+
+          <!-- Operação mobile -->
+          <div class="nav-group">
+            <a
+              href="#"
+              class="nav-group-toggle flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+              onclick="toggleNavGroup(this)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa-solid fa-chart-simple w-5 text-center mr-3 text-gray-500"
+                ></i>
+                <span>Operação</span>
+              </div>
               <i
-                class="fa-solid fa-chart-simple w-5 text-center mr-3 text-gray-500"
-              ></i
-              ><span>Operação</span>
+                class="fa-solid fa-chevron-right text-xs text-gray-400 transition-transform"
+              ></i>
+            </a>
+            <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="
+                  navigate('operacao-entrada');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrada
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('operacao-saida');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Saída
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('operacao-devolucao');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-rotate-left"></i> Devolução
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('operacao-alteracoes');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-pen-to-square"></i> Alterações
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('operacao-baixas');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-check-double"></i> Baixas
+              </a>
             </div>
-            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
-          </a>
+          </div>
+
+          <!-- SAC mobile - AGORA AQUI, ANTES DE FERRAMENTAS -->
+          <div class="nav-group">
+            <a
+              href="#"
+              class="nav-group-toggle flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+              onclick="toggleNavGroup(this)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa-solid fa-headset w-5 text-center mr-3 text-gray-500"
+                ></i>
+                <span>SAC</span>
+              </div>
+              <i
+                class="fa-solid fa-chevron-right text-xs text-gray-400 transition-transform"
+              ></i>
+            </a>
+            <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="
+                  navigate('sac-chamados');
+                  toggleMobileSidebar(false);
+                "
+                id="nav-sac-chamados-mobile"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-ticket"></i> Chamados
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('sac-reputacao');
+                  toggleMobileSidebar(false);
+                "
+                id="nav-sac-reputacao-mobile"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-clock-rotate-left"></i> Controle de Reputação
+              </a>
+            </div>
+          </div>
 
           <div
             class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
@@ -500,38 +672,48 @@
             ></i
             ><span>Sub-Bases</span>
           </a>
-
-          <a
-            href="#"
-            onclick="
-              navigate('atrasados');
-              toggleMobileSidebar(false);
-            "
-            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-            data-title="Visão estratégica de atrasos!"
-            data-desc="Tenha uma visão centralizada dos pedidos em atraso e acompanhe a evolução das tratativas com sua transportadora."
-            data-sub="A gestão integrada permite o encaminhamento direto para parceiros estratégicos."
-            onmouseenter="showTooltip(event, this)"
-            onmouseleave="hideTooltip()"
-          >
-            <div class="flex items-center">
+          <!-- SAC mobile -->
+          <div class="nav-group">
+            <a
+              href="#"
+              class="nav-group-toggle flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+              onclick="toggleNavGroup(this)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa-solid fa-headset w-5 text-center mr-3 text-gray-500"
+                ></i>
+                <span>SAC</span>
+              </div>
               <i
-                class="fa-solid fa-clock-rotate-left w-5 text-center mr-3 text-orange-500"
-              ></i
-              ><span class="font-medium">Pedidos em atraso</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <span
-                id="sidebar-counter-mobile"
-                class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm"
-                >0</span
+                class="fa-solid fa-chevron-right text-xs text-gray-400 transition-transform"
+              ></i>
+            </a>
+            <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="
+                  navigate('sac-chamados');
+                  toggleMobileSidebar(false);
+                "
+                id="nav-sac-chamados-mobile"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
               >
-              <span
-                class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm"
-                >N</span
+                <i class="fa-solid fa-ticket"></i> Chamados
+              </a>
+              <a
+                href="#"
+                onclick="
+                  navigate('sac-reputacao');
+                  toggleMobileSidebar(false);
+                "
+                id="nav-sac-reputacao-mobile"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
               >
+                <i class="fa-solid fa-clock-rotate-left"></i> Controle de Reputação
+              </a>
             </div>
-          </a>
+          </div>
 
           <div
             class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
@@ -713,20 +895,15 @@
       ></div>
     </div>
 
-    <!-- GLOBAL TOOLTIP (FIXO PARA NÃO CORTAR) -->
-    <div
-      id="global-tooltip"
-      class="hidden fixed z-[60] bg-white rounded-xl shadow-lg border border-gray-100 p-4 w-[280px] pointer-events-none transition-opacity duration-200"
-    ></div>
-
     <script>
-      // --- GLOBAL TOOLTIP LOGIC ---
+      // --- GLOBAL TOOLTIP LOGIC (mantido) ---
       const globalTooltip = document.getElementById("global-tooltip");
 
       function showTooltip(event, element) {
         const title = element.getAttribute("data-title");
         const desc = element.getAttribute("data-desc");
         const sub = element.getAttribute("data-sub");
+        if (!title) return;
 
         globalTooltip.innerHTML = `
                 <div class="inline-block bg-[#b2e671] text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase mb-2">Novo</div>
@@ -754,6 +931,26 @@
 
       function hideTooltip() {
         globalTooltip.classList.add("hidden");
+      }
+
+      // --- NAV GROUP TOGGLE ---
+      function toggleNavGroup(link) {
+        const group = link.closest(".nav-group");
+        if (!group) return;
+        const container = group.querySelector(".submenu-container");
+        const icon = link.querySelector(".fa-chevron-right");
+        if (container) {
+          container.classList.toggle("open");
+          if (icon) icon.classList.toggle("rotate-90");
+        }
+        // Fechar outros grupos abertos (opcional)
+        // Para manter apenas um aberto, descomente:
+        // document.querySelectorAll('.nav-group .submenu-container.open').forEach(el => {
+        //   if (el !== container) {
+        //     el.classList.remove('open');
+        //     el.closest('.nav-group').querySelector('.fa-chevron-right')?.classList.remove('rotate-90');
+        //   }
+        // });
       }
 
       // --- Mock Data & Constants ---
@@ -912,35 +1109,53 @@
       }
 
       function updateSidebarCounter() {
+        // O contador não é mais usado em Pedidos em atraso, mas mantido por compatibilidade
         const count = orders.filter(
           (o) => o.status === "Atraso identificado",
         ).length;
-        document.getElementById("sidebar-counter").innerText = count;
-        document.getElementById("sidebar-counter-mobile").innerText = count;
-        ["sidebar-counter", "sidebar-counter-mobile"].forEach((id) => {
-          const el = document.getElementById(id);
-          el.style.display = count > 0 ? "inline-block" : "none";
-        });
+        // Não temos mais um badge específico, mas podemos manter para uso futuro
       }
 
+      // --- Navigation ---
       function navigate(view) {
         currentView = view;
         const container = document.getElementById("view-container");
         container.innerHTML = "";
 
-        document.querySelectorAll(".nav-item").forEach((el) => {
+        // Remove active class from all nav items (including subitems)
+        document.querySelectorAll(".nav-item, .submenu-item").forEach((el) => {
           el.classList.remove("nav-item-active");
         });
 
-        const activeNav = document.getElementById(`nav-${view}`);
-        if (activeNav) {
-          activeNav.classList.add("nav-item-active");
+        // Active class for the specific nav item (if it exists)
+        // For subitems, we use the id pattern
+        const activeEl = document.getElementById(`nav-${view}`);
+        if (activeEl) {
+          activeEl.classList.add("nav-item-active");
+        }
+        // Also check for mobile version
+        const activeMobile = document.getElementById(`nav-${view}-mobile`);
+        if (activeMobile) {
+          activeMobile.classList.add("nav-item-active");
         }
 
-        if (view === "dashboard") renderDashboard(container);
-        else if (view === "atrasados") renderAtrasados(container);
+        // Render views
+        if (view === "dashboard") {
+          renderDashboard(container);
+        } else if (view === "sac-chamados") {
+          renderChamados(container);
+        } else if (view === "sac-reputacao") {
+          renderReputacao(container);
+        } else if (view.startsWith("operacao-")) {
+          renderOperacaoSub(view, container);
+        } else {
+          // fallback
+          container.innerHTML =
+            '<div class="flex items-center justify-center h-full text-gray-500"><i class="fa-solid fa-circle-info mr-2"></i> Página em construção</div>';
+        }
       }
 
+      // --- Dashboard (mesmo) ---
       function renderDashboard(container) {
         const totalAtrasados = orders.filter(
           (o) => o.status === "Atraso identificado",
@@ -963,13 +1178,13 @@
                     <div class="bg-white rounded-lg shadow-seller p-4 border-t-4 border-gray-200"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Importados <i class="fa-solid fa-box text-gray-400"></i></p><p class="text-2xl font-bold text-gray-700">853</p></div>
                     <div class="bg-white rounded-lg shadow-seller p-4 border-t-4 border-blue-400"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Recebidos <i class="fa-solid fa-clipboard-check text-blue-400"></i></p><p class="text-2xl font-bold text-blue-500">31</p></div>
                     <div class="bg-white rounded-lg shadow-seller p-4 border-t-4 border-purple-500"><p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Em Rota <i class="fa-solid fa-truck text-purple-500"></i></p><p class="text-2xl font-bold text-purple-600">1</p></div>
-                    <div class="bg-white rounded-lg shadow-seller p-5 border-l-4 border-red-500 relative overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer" onclick="navigate('atrasados')">
+                    <div class="bg-white rounded-lg shadow-seller p-5 border-l-4 border-red-500 relative overflow-hidden group hover:shadow-lg transition-shadow cursor-pointer" onclick="navigate('sac-chamados')">
                         <div class="absolute -right-4 -top-4 w-16 h-16 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-                        <p class="text-xs text-red-500 font-bold uppercase tracking-wide mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Ação Requerida</p>
-                        <h3 class="text-gray-800 font-semibold text-lg leading-tight mb-1">Pedidos em Atraso</h3>
+                        <p class="text-xs text-red-500 font-bold uppercase tracking-wide mb-2 flex items-center"><i class="fa-solid fa-solid fa-clock-rotate-left mr-1.5"></i> Ação Requerida</p>
+                        <h3 class="text-gray-800 font-semibold text-lg leading-tight mb-1">Chamados em Atraso</h3>
                         <div class="flex items-baseline space-x-2"><span class="text-3xl font-bold text-red-600">${totalAtrasados}</span><span class="text-sm text-gray-500">pendentes</span></div>
                         ${totalEmAtendimento > 0 ? `<p class="text-xs text-fnvj-dark mt-2 font-medium bg-emerald-50 inline-block px-2 py-0.5 rounded border border-emerald-100"><i class="fa-solid fa-leaf mr-1"></i> ${totalEmAtendimento} em tratativa</p>` : ""}
-                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-tracken-green font-medium text-sm group-hover:text-green-600 transition-colors"><span>Acessar painel de gestão</span><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-tracken-green font-medium text-sm group-hover:text-green-600 transition-colors"><span>Acessar chamados</span><i class="fa-solid fa-arrow-right"></i></div>
                     </div>
                     <div class="bg-tracken-green rounded-lg shadow-seller p-4 text-white"><p class="text-xs text-green-100 uppercase tracking-wide font-semibold mb-1 flex items-center justify-between">Pedidos <i class="fa-solid fa-box-open text-green-200"></i></p><p class="text-2xl font-bold">15038</p><p class="text-xs text-green-100 mt-1">Total do dia</p></div>
                 </div>
@@ -989,11 +1204,12 @@
             `;
       }
 
-      function renderAtrasados(container) {
+      // --- CHAMADOS (antiga tela de pedidos em atraso, com métricas de SAC) ---
+      function renderChamados(container) {
         const pendentes = orders.filter(
           (o) => o.status === "Atraso identificado",
         ).length;
-        const encaminhadosHoje = orders.filter(
+        const encaminhados = orders.filter(
           (o) => o.status === "Encaminhado p/ FNVJ",
         ).length;
         const emAtendimento = orders.filter((o) =>
@@ -1009,14 +1225,15 @@
 
         container.innerHTML = `
                 <div class="mb-6">
-                    <div class="text-sm text-gray-400 mb-1 flex items-center">Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">Gestão de Atrasos</span></div>
-                    <div class="flex justify-between items-center"><h1 class="text-2xl font-semibold text-gray-800 flex items-center">Pedidos em Atraso</h1></div>
+                    <div class="text-sm text-gray-400 mb-1 flex items-center">Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">SAC / Chamados</span></div>
+                    <div class="flex justify-between items-center"><h1 class="text-2xl font-semibold text-gray-800 flex items-center"><i class="fa-solid fa-ticket text-tracken-green mr-2"></i> Chamados</h1></div>
+                    <p class="text-xs lg:text-sm text-gray-500 mt-0.5">Gerencie solicitações de suporte, reclamações e devoluções com seus clientes.</p>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded p-4 border border-gray-200 shadow-seller"><div class="text-xs text-gray-500 mb-1">Identificados</div><div class="text-xl font-bold text-gray-800">${pendentes}</div></div>
-                    <div class="bg-white rounded p-4 border border-blue-200 shadow-seller bg-blue-50"><div class="text-xs text-blue-600 mb-1">Encaminhados</div><div class="text-xl font-bold text-blue-700">${encaminhadosHoje}</div></div>
+                    <div class="bg-white rounded p-4 border border-blue-200 shadow-seller bg-blue-50"><div class="text-xs text-blue-600 mb-1">Encaminhados</div><div class="text-xl font-bold text-blue-700">${encaminhados}</div></div>
                     <div class="bg-white rounded p-4 border border-orange-200 shadow-seller bg-orange-50"><div class="text-xs text-orange-600 mb-1">Em Atendimento</div><div class="text-xl font-bold text-orange-700">${emAtendimento}</div></div>
-                    <div class="bg-white rounded p-4 border border-green-200 shadow-seller bg-green-50"><div class="text-xs text-green-600 mb-1">Resolvidos (Sucesso)</div><div class="text-xl font-bold text-green-700">${resolvidos}</div></div>
+                    <div class="bg-white rounded p-4 border border-green-200 shadow-seller bg-green-50"><div class="text-xs text-green-600 mb-1">Resolvidos</div><div class="text-xl font-bold text-green-700">${resolvidos}</div></div>
                 </div>
                 <div class="bg-white p-3 rounded-t border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="flex space-x-2 w-full sm:w-auto">
@@ -1073,6 +1290,151 @@
         renderTableRows();
       }
 
+      // --- CONTROLE DE REPUTAÇÃO ---
+      function renderReputacao(container) {
+        const pendentes = orders.filter(
+          (o) => o.status === "Atraso identificado",
+        ).length;
+        const encaminhados = orders.filter(
+          (o) => o.status === "Encaminhado p/ FNVJ",
+        ).length;
+        const emAtendimento = orders.filter((o) =>
+          [
+            "Em atendimento",
+            "Cliente contatado",
+            "Tratativa concluída",
+          ].includes(o.status),
+        ).length;
+        const resolvidos = orders.filter(
+          (o) => o.status === "Resolvido",
+        ).length;
+
+        container.innerHTML = `
+    <div class="mb-6">
+      <div class="text-sm text-gray-400 mb-1 flex items-center">
+        Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> 
+        <span class="text-gray-600 font-medium">SAC / Controle de Reputação</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
+          <i class="fa-solid fa-clock-rotate-left text-yellow-500 mr-2"></i> 
+          Controle de Reputação
+        </h1>
+      </div>
+      <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
+        Acompanhe a percepção dos clientes sobre sua operação.
+      </p>
+    </div>
+    <!-- Mesmas métricas e tabela da tela de chamados -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
+        <div class="text-xs text-gray-500 mb-1">Identificados</div>
+        <div class="text-xl font-bold text-gray-800">${pendentes}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-blue-200 shadow-seller bg-blue-50">
+        <div class="text-xs text-blue-600 mb-1">Encaminhados</div>
+        <div class="text-xl font-bold text-blue-700">${encaminhados}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-orange-200 shadow-seller bg-orange-50">
+        <div class="text-xs text-orange-600 mb-1">Em Atendimento</div>
+        <div class="text-xl font-bold text-orange-700">${emAtendimento}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-green-200 shadow-seller bg-green-50">
+        <div class="text-xs text-green-600 mb-1">Resolvidos</div>
+        <div class="text-xl font-bold text-green-700">${resolvidos}</div>
+      </div>
+    </div>
+    <div class="bg-white p-3 rounded-t border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex space-x-2 w-full sm:w-auto">
+        <select id="filter-status-reputacao" onchange="renderTableRowsReputacao()" class="border border-gray-300 text-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-tracken-green w-full sm:w-auto">
+          <option value="all">Todos os Status</option>
+          <option value="Atraso identificado">Atraso identificado</option>
+          <option value="Encaminhado p/ FNVJ">Encaminhado p/ FNVJ</option>
+          <option value="Em atendimento">Em atendimento</option>
+          <option value="Cliente contatado">Cliente contatado</option>
+          <option value="Tratativa concluída">Tratativa concluída</option>
+          <option value="Resolvido">Resolvido</option>
+        </select>
+        <select id="filter-marketplace-reputacao" onchange="renderTableRowsReputacao()" class="border border-gray-300 text-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-tracken-green w-full sm:w-auto">
+          <option value="all">Todos Marketplaces</option>
+          <option value="Mercado Livre">Mercado Livre</option>
+          <option value="Shopee">Shopee</option>
+          <option value="Magalu">Magalu</option>
+          <option value="Amazon">Amazon</option>
+        </select>
+      </div>
+      <div class="flex items-center w-full sm:w-auto justify-between sm:justify-end">
+        <span class="text-sm text-gray-500 mr-4 hidden sm:inline"><span id="selected-count-label-reputacao">0</span> selecionado(s)</span>
+        <button id="btn-acionar-reputacao" onclick="openActionModalReputacao()" disabled class="bg-fnvj-green hover:bg-emerald-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium shadow-seller transition-colors flex items-center">
+          <i class="fa-solid fa-handshake mr-2"></i> Acionar Fique no Verde Já
+        </button>
+      </div>
+    </div>
+    <div class="bg-white rounded-b shadow-seller overflow-hidden border border-t-0 border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead><tr class="table-header-dark text-xs tracking-wider">
+            <th class="p-3 w-12 text-center"><input type="checkbox" id="selectAllReputacao" class="custom-checkbox" onchange="toggleSelectAllReputacao(this)"></th>
+            <th class="p-3 font-medium">REMESSA / PEDIDO</th>
+            <th class="p-3 font-medium">MARKETPLACE</th>
+            <th class="p-3 font-medium">CLIENTE</th>
+            <th class="p-3 font-medium">DATA PREV.</th>
+            <th class="p-3 font-medium text-center">ATRASO</th>
+            <th class="p-3 font-medium">STATUS</th>
+            <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
+          </tr></thead>
+          <tbody id="table-body-reputacao"></tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-100 flex items-center justify-between text-gray-500 text-xs">
+        <div>Mostrando 1 a ${orders.length} de ${orders.length} registros</div>
+        <div class="flex space-x-1">
+          <button class="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50" disabled><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="px-2 py-1 border border-tracken-green bg-tracken-active text-tracken-dark rounded">1</button>
+          <button class="px-2 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50" disabled><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  `;
+        // Chama a função de renderização da tabela para esta view
+        renderTableRowsReputacao();
+      }
+
+      // --- OPERAÇÃO SUBITENS (genéricos) ---
+      function renderOperacaoSub(view, container) {
+        const sub = view.replace("operacao-", "");
+        const titles = {
+          entrada: "Entrada de Mercadorias",
+          saida: "Saída de Mercadorias",
+          devolucao: "Devoluções",
+          alteracoes: "Alterações de Pedidos",
+          baixas: "Baixas de Estoque",
+        };
+        const icons = {
+          entrada: "fa-arrow-right-to-bracket",
+          saida: "fa-arrow-right-from-bracket",
+          devolucao: "fa-rotate-left",
+          alteracoes: "fa-pen-to-square",
+          baixas: "fa-check-double",
+        };
+        const title = titles[sub] || "Operação";
+        const icon = icons[sub] || "fa-chart-simple";
+
+        container.innerHTML = `
+                <div class="mb-6">
+                    <div class="text-sm text-gray-400 mb-1 flex items-center">Operação <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i> <span class="text-gray-600 font-medium">${title}</span></div>
+                    <h1 class="text-2xl font-semibold text-gray-800 flex items-center"><i class="fa-solid ${icon} text-tracken-green mr-2"></i> ${title}</h1>
+                    <p class="text-xs lg:text-sm text-gray-500 mt-0.5">Módulo em desenvolvimento. Em breve mais funcionalidades.</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-seller p-8 text-center text-gray-500 border border-gray-200">
+                    <i class="fa-solid ${icon} text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-lg font-medium">${title}</p>
+                    <p class="text-sm">Esta tela está em construção. Volte em breve!</p>
+                </div>
+            `;
+      }
+
+      // --- Table Rows (usado apenas em Chamados) ---
       function renderTableRows() {
         const tbody = document.getElementById("table-body");
         if (!tbody) return;
@@ -1218,9 +1580,11 @@
         saveData();
         selectedOrderIds.clear();
         closeModal();
-        if (currentView === "atrasados")
-          renderAtrasados(document.getElementById("view-container"));
-        else updateSidebarCounter();
+        if (currentView === "sac-chamados")
+          renderChamados(document.getElementById("view-container"));
+        else {
+          // atualiza qualquer outra view que precise do contador
+        }
       }
 
       function openDrawer(orderId) {
@@ -1264,7 +1628,6 @@
           const isPartnerEvent =
             event.type === "partner_init" || event.type === "partner_action";
 
-          // Substituição do ícone de folha pela logo real da FNVJ
           const partnerLabel = isPartnerEvent
             ? `<span class="flex items-center text-fnvj-green font-medium"><img src="logo_black.png" alt="FNVJ" class="h-8 w-auto max-h-full inline-block align-middle" onerror="this.style.display='none'"></span>`
             : `<span class="text-gray-400"><i class="fa-solid fa-robot"></i> Sistema</span>`;
@@ -1288,7 +1651,6 @@
           const nextStatus = STATUS_FLOW[currentIndex + 1];
           footer.innerHTML = `
                     <div class="space-y-2">
-                        <!-- NOVO BOTÃO WHATSAPP ACIMA DO SIMULADOR -->
                         <a href="https://wa.me/5511999999999" target="_blank" class="w-full py-2.5 bg-[#25D366] hover:bg-[#1ebe5c] text-white rounded shadow-sm font-medium transition flex items-center justify-center">
                             <i class="fa-brands fa-whatsapp mr-2 text-lg"></i> Entrar em contato com Fique no Verde Já
                         </a>
@@ -1339,14 +1701,18 @@
           });
           saveData();
           renderDrawerContent(order);
-          if (currentView === "atrasados")
-            renderAtrasados(document.getElementById("view-container"));
+          if (currentView === "sac-chamados")
+            renderChamados(document.getElementById("view-container"));
         }
       }
 
       window.onload = function () {
         initData();
         navigate("dashboard");
+        // Abrir grupos por padrão (opcional)
+        // document.querySelectorAll('.nav-group-toggle').forEach(link => {
+        //   toggleNavGroup(link);
+        // });
       };
     </script>
   </body>
