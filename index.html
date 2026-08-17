@@ -2774,6 +2774,60 @@
         return "w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50";
       }
 
+      const VINCULO_TABELAS_EXEMPLO = [
+        { id: "flex-sp", nome: "Tabela Flex SP" },
+        { id: "standard", nome: "Tabela Standard" },
+        { id: "express", nome: "Tabela Express" },
+        { id: "interior", nome: "Tabela Interior" },
+      ];
+      const VINCULO_SERVICOS_EXEMPLO = [
+        { id: "mercadolivre", nome: "Mercado Livre" },
+        { id: "shopee", nome: "Shopee" },
+        { id: "amazon", nome: "Amazon" },
+        { id: "magalu", nome: "Magalu" },
+      ];
+
+      function escapeVinculoAttr(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;");
+      }
+
+      function vinculoTabelaOptionsHtml() {
+        return VINCULO_TABELAS_EXEMPLO.map(
+          (tabela) => `<option value="${tabela.id}">${tabela.nome}</option>`
+        ).join("");
+      }
+
+      function getVinculoCustomer(carrierCustomerId) {
+        if (!carrierCustomerId) return null;
+        return (
+          loadVinculoStore().customers.find(
+            (item) => item.carrierCustomerId === carrierCustomerId
+          ) || null
+        );
+      }
+
+      function collectVinculoServicos(form) {
+        return VINCULO_SERVICOS_EXEMPLO.filter((servico) => {
+          const box = form.querySelector(`input[name="servico-${servico.id}"]`);
+          return box && box.checked;
+        }).map((servico) => {
+          const tabela = form.querySelector(`select[name="tabela-${servico.id}"]`);
+          const tabelaId = tabela ? tabela.value : VINCULO_TABELAS_EXEMPLO[0].id;
+          const tabelaNome =
+            VINCULO_TABELAS_EXEMPLO.find((item) => item.id === tabelaId)?.nome ||
+            tabelaId;
+          return {
+            id: servico.id,
+            nome: servico.nome,
+            tabelaId,
+            tabelaNome,
+          };
+        });
+      }
+
       function renderCadastroCliente(container) {
         const req = getVinculoRequest(vinculoFormRequestId);
         if (!req) {
@@ -2785,6 +2839,18 @@
           return;
         }
         const snap = req.sellerSnapshot || {};
+        const servicosHtml = VINCULO_SERVICOS_EXEMPLO.map(
+          (servico) => `
+            <label class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-tracken-green/40">
+              <span class="flex items-center gap-2 sm:w-44 shrink-0">
+                <input type="checkbox" name="servico-${servico.id}" class="rounded border-gray-300 text-tracken-green focus:ring-tracken-green" />
+                <span class="text-sm font-medium text-gray-800">${servico.nome}</span>
+              </span>
+              <select name="tabela-${servico.id}" class="${inputClassVinculo()}">
+                ${vinculoTabelaOptionsHtml()}
+              </select>
+            </label>`
+        ).join("");
         container.innerHTML = `
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
@@ -2797,52 +2863,85 @@
               <i class="fa-solid fa-user-plus text-tracken-green mr-2"></i> Criar cadastro
             </h1>
             <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-              Cadastro do cliente no ambiente da transportadora. Dados do TRACKen Seller já preenchidos. Complete apenas o que faltar.
+              Cadastro do cliente no ambiente da transportadora. Campos com * são obrigatórios.
             </p>
           </div>
-          <form id="form-cadastro-vinculo" onsubmit="salvarCadastroVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-3xl space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID de origem do Seller</label>
-                <input type="text" value="${req.sellerId}" readonly class="${readonlyClassVinculo()}" />
+          <form id="form-cadastro-vinculo" onsubmit="salvarCadastroVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-4xl space-y-8">
+            <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Dados obrigatórios</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Documento (CNPJ/CPF) *</label>
+                  <input name="documento" type="text" required value="${escapeVinculoAttr(snap.cnpj)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Razão social *</label>
+                  <input name="razaoSocial" type="text" required value="${escapeVinculoAttr(snap.empresa)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome fantasia *</label>
+                  <input name="nomeFantasia" type="text" required value="${escapeVinculoAttr(snap.empresa || snap.nome)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Telefone *</label>
+                  <input name="telefone" type="text" required value="${escapeVinculoAttr(snap.telefone)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CEP *</label>
+                  <input name="cep" type="text" required value="${escapeVinculoAttr(snap.cep)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Número *</label>
+                  <input name="numero" type="text" required placeholder="Nº" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ambiente *</label>
+                  <select name="ambiente" required class="${inputClassVinculo()}">
+                    <option value="">Selecione</option>
+                    <option value="producao">Produção</option>
+                    <option value="homologacao">Homologação</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Vencimento *</label>
+                  <select name="vencimento" required class="${inputClassVinculo()}">
+                    <option value="">Dia do vencimento</option>
+                    ${[5, 10, 15, 20, 25].map((dia) => `<option value="${dia}">Dia ${String(dia).padStart(2, "0")}</option>`).join("")}
+                  </select>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CST *</label>
+                  <select name="cst" required class="${inputClassVinculo()}">
+                    <option value="">Selecione</option>
+                    <option value="contribuinte_icms">Contribuinte ICMS</option>
+                    <option value="isento_inscricao">Contribuinte isento de inscrição</option>
+                    <option value="nao_contribuinte">Não contribuinte</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID da solicitação</label>
-                <input type="text" value="${req.requestId}" readonly class="${readonlyClassVinculo()}" />
+            </section>
+            <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-1">Vínculo de serviços *</h2>
+              <p class="text-xs text-gray-500 mb-3">Marque os canais do cliente e a tabela de preço. As tabelas abaixo são só exemplos (cada transportadora cadastra as suas).</p>
+              <div class="space-y-2">${servicosHtml}</div>
+            </section>
+            <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Outros</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
+                  <input name="email" type="email" value="${escapeVinculoAttr(snap.email)}" class="${inputClassVinculo()}" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Complemento de endereço</label>
+                  <input name="complemento" type="text" placeholder="Apto, sala, bloco..." class="${inputClassVinculo()}" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Observações</label>
+                  <textarea name="observacoes" rows="3" class="${inputClassVinculo()}"></textarea>
+                </div>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome</label>
-                <input name="nome" type="text" value="${snap.nome || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome da loja / Razão social</label>
-                <input name="empresa" type="text" value="${snap.empresa || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CNPJ</label>
-                <input name="cnpj" type="text" value="${snap.cnpj || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
-                <input name="email" type="email" value="${snap.email || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Telefone</label>
-                <input name="telefone" type="text" value="${snap.telefone || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CEP</label>
-                <input name="cep" type="text" value="${snap.cep || ""}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Média volumetria</label>
-                <input name="mediaVolumetria" type="text" placeholder="Campo específico da transportadora" class="${inputClassVinculo()}" />
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Observações internas</label>
-                <textarea name="observacoes" rows="3" placeholder="Complete apenas o que estiver faltando" class="${inputClassVinculo()}"></textarea>
-              </div>
-            </div>
+            </section>
             <div class="flex justify-end space-x-3 pt-2">
               <button type="button" onclick="navigate('vinculo')" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
               <button type="submit" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium">Salvar cadastro</button>
@@ -2856,20 +2955,41 @@
         const req = getVinculoRequest(vinculoFormRequestId);
         if (!req) return;
         const form = event.target;
+        const servicos = collectVinculoServicos(form);
+        if (!servicos.length) {
+          showToastOps("Vincule ao menos um serviço ao cliente.");
+          return;
+        }
+        const cstLabels = {
+          contribuinte_icms: "Contribuinte ICMS",
+          isento_inscricao: "Contribuinte isento de inscrição",
+          nao_contribuinte: "Não contribuinte",
+        };
+        const ambienteLabels = {
+          producao: "Produção",
+          homologacao: "Homologação",
+        };
         const store = loadVinculoStore();
         const carrierCustomerId = nextVinculoId("CLI", store.customers, "carrierCustomerId", 56391);
         const customer = {
           carrierCustomerId,
           sellerId: req.sellerId,
           requestId: req.requestId,
-          nome: form.nome.value,
-          empresa: form.empresa.value,
-          cnpj: form.cnpj.value,
-          email: form.email.value,
-          telefone: form.telefone.value,
-          cep: form.cep.value,
-          mediaVolumetria: form.mediaVolumetria.value,
-          observacoes: form.observacoes.value,
+          documento: form.documento.value.trim(),
+          razaoSocial: form.razaoSocial.value.trim(),
+          nomeFantasia: form.nomeFantasia.value.trim(),
+          telefone: form.telefone.value.trim(),
+          cep: form.cep.value.trim(),
+          numero: form.numero.value.trim(),
+          ambiente: form.ambiente.value,
+          ambienteLabel: ambienteLabels[form.ambiente.value] || form.ambiente.value,
+          vencimento: form.vencimento.value,
+          cst: form.cst.value,
+          cstLabel: cstLabels[form.cst.value] || form.cst.value,
+          servicos,
+          email: form.email.value.trim(),
+          complemento: form.complemento.value.trim(),
+          observacoes: form.observacoes.value.trim(),
           createdAt: nowIso(),
         };
         store.customers.push(customer);
@@ -2906,9 +3026,11 @@
           container.innerHTML = `<div class="text-gray-500 p-8">Crie o cadastro antes do login. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
           return;
         }
-        const snap = req.sellerSnapshot || {};
-        const email = snap.email || "";
-        const username = email.includes("@") ? email.split("@")[0] : "seller";
+        const customer = getVinculoCustomer(req.carrierCustomerId) || {};
+        const email = customer.email || (req.sellerSnapshot || {}).email || "";
+        const username = customer.nomeFantasia || "";
+        const documento = customer.documento || "";
+        const whatsapp = customer.telefone || "";
         container.innerHTML = `
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
@@ -2921,38 +3043,26 @@
               <i class="fa-solid fa-key text-tracken-green mr-2"></i> Criar login
             </h1>
             <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-              Credencial de acesso associada ao cadastro. Entidade distinta do cadastro do cliente.
+              E-mail, usuário, documento e WhatsApp vêm do cadastro. Defina a senha para concluir.
             </p>
           </div>
           <form id="form-login-vinculo" onsubmit="salvarLoginVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-3xl space-y-5">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID de origem do Seller</label>
-                <input type="text" value="${req.sellerId}" readonly class="${readonlyClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID da solicitação</label>
-                <input type="text" value="${req.requestId}" readonly class="${readonlyClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID do cadastro</label>
-                <input type="text" value="${req.carrierCustomerId}" readonly class="${readonlyClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Usuário</label>
-                <input name="username" type="text" value="${username}" class="${inputClassVinculo()}" />
-              </div>
-              <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
-                <input name="email" type="email" value="${email}" class="${inputClassVinculo()}" />
+                <input name="email" type="email" required value="${escapeVinculoAttr(email)}" class="${inputClassVinculo()}" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Permissões</label>
-                <select name="permissoes" class="${inputClassVinculo()}">
-                  <option value="operacional">Operacional</option>
-                  <option value="visualizacao">Somente visualização</option>
-                  <option value="admin_loja">Admin da loja</option>
-                </select>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome de usuário</label>
+                <input name="username" type="text" required value="${escapeVinculoAttr(username)}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Documento</label>
+                <input name="documento" type="text" value="${escapeVinculoAttr(documento)}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">WhatsApp</label>
+                <input name="whatsapp" type="text" required value="${escapeVinculoAttr(whatsapp)}" class="${inputClassVinculo()}" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Senha</label>
@@ -2989,7 +3099,8 @@
           requestId: req.requestId,
           username: form.username.value,
           email: form.email.value,
-          permissoes: form.permissoes.value,
+          documento: form.documento.value,
+          whatsapp: form.whatsapp.value,
           createdAt: nowIso(),
         });
         const target = store.requests.find((r) => r.requestId === req.requestId);
