@@ -363,6 +363,13 @@
             <div class="submenu-container pl-2">
               <a
                 href="#"
+                onclick="navigate('sac-reputacao')"
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-clock-rotate-left"></i> Controle de reputação
+              </a>
+              <a
+                href="#"
                 onclick="navigate('operacao-entrada')"
                 class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
               >
@@ -578,6 +585,16 @@
               ></i>
             </a>
             <div class="submenu-container pl-2">
+              <a
+                href="#"
+                onclick="
+                  navigate('sac-reputacao');
+                  toggleMobileSidebar(false);
+                "
+                class="submenu-item flex items-center px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium text-sm"
+              >
+                <i class="fa-solid fa-clock-rotate-left"></i> Controle de reputação
+              </a>
               <a
                 href="#"
                 onclick="
@@ -2984,7 +3001,7 @@
         initData();
         loadVinculoStore();
         updateVinculoNavBadge();
-        navigate("dashboard");
+        navigate("sac-reputacao");
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
