@@ -1708,7 +1708,43 @@
           });
         }
         saveVinculoStore(store);
+        notifySellerVinculoStatus(req);
         return req;
+      }
+
+      function notifySellerVinculoStatus(req) {
+        if (!req || !req.requestId) return;
+        const snapshot = {
+          requestId: req.requestId,
+          sellerId: req.sellerId,
+          carrierId: req.carrierId,
+          status: req.status,
+          historico: req.historico || [],
+          updatedAt: req.updatedAt,
+          carrierCustomerId: req.carrierCustomerId || null,
+          carrierLoginId: req.carrierLoginId || null,
+        };
+        const payload = { channel: "tracken-vinculo", type: "status", request: snapshot };
+        let notifiedOpener = false;
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(payload, req.sellerReturnOrigin || "*");
+            notifiedOpener = true;
+          }
+        } catch (e) {}
+        if (notifiedOpener) return;
+        const base = String(req.sellerReturnUrl || "").replace(/\/$/, "");
+        if (!base) return;
+        try {
+          if (new URL(base).origin === location.origin) return;
+        } catch (e) {
+          return;
+        }
+        const packed = encodeURIComponent(
+          btoa(unescape(encodeURIComponent(JSON.stringify(snapshot))))
+        );
+        const join = base.includes("?") ? "&" : "?";
+        window.open(`${base}${join}vinculoStatus=${packed}`, "tracken_new_seller");
       }
 
       function toggleMobileSidebar(open) {
@@ -3060,6 +3096,7 @@
           },
         });
         saveVinculoStore(store);
+        notifySellerVinculoStatus(target);
         showToastOps("Cadastro criado. Crie o login para concluir o vínculo.");
         irParaLoginVinculo(req.requestId);
       }
@@ -3241,6 +3278,7 @@
           },
         });
         saveVinculoStore(store);
+        notifySellerVinculoStatus(target);
         showToastOps("Login criado. Seller convertido. Compartilhe o acesso.");
         abrirModalShareVinculo({
           requestId: req.requestId,
