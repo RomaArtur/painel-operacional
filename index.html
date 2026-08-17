@@ -404,6 +404,25 @@
             <span>Sub-Bases</span>
           </a>
 
+          <!-- Solicitações de vínculo -->
+          <a
+            href="#"
+            onclick="navigate('vinculo')"
+            id="nav-vinculo"
+            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+            data-title="Vínculo com Sellers"
+            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e login."
+            data-sub="A conversão só ocorre após cadastro e login criados no ambiente da transportadora."
+            onmouseenter="showTooltip(event, this)"
+            onmouseleave="hideTooltip()"
+          >
+            <div class="flex items-center">
+              <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
+              <span>Solicitações de vínculo</span>
+            </div>
+            <span id="vinculo-nav-badge" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
+          </a>
+
           <!-- Controle de reputação com badge "N" e tooltip -->
           <a
             href="#"
@@ -614,6 +633,28 @@
               class="fa-solid fa-layer-group w-5 text-center mr-3 text-gray-500"
             ></i
             ><span>Sub-Bases</span>
+          </a>
+
+          <!-- Solicitações de vínculo (mobile) -->
+          <a
+            href="#"
+            onclick="
+              navigate('vinculo');
+              toggleMobileSidebar(false);
+            "
+            id="nav-vinculo-mobile"
+            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+            data-title="Vínculo com Sellers"
+            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e login."
+            data-sub="A conversão só ocorre após cadastro e login criados no ambiente da transportadora."
+            onmouseenter="showTooltip(event, this)"
+            onmouseleave="hideTooltip()"
+          >
+            <div class="flex items-center">
+              <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
+              <span>Solicitações de vínculo</span>
+            </div>
+            <span id="vinculo-nav-badge-mobile" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
           </a>
 
           <!-- Controle de reputação com badge "N" e tooltip (mobile) -->
@@ -905,6 +946,52 @@
       </div>
     </div>
 
+    <!-- Modal recusar solicitação de vínculo -->
+    <div
+      id="vinculo-recusar-modal"
+      class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onclick="if(event.target===this) fecharModalRecusarVinculo()"
+    >
+      <div
+        class="modal-content bg-black rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-700"
+      >
+        <div
+          class="bg-gray-900 px-6 py-4 border-b border-gray-700 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <i class="fa-solid fa-ban text-red-400 mr-2"></i> Recusar solicitação
+          </h3>
+          <button
+            onclick="fecharModalRecusarVinculo()"
+            class="text-gray-400 hover:text-white transition"
+          >
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+        <div class="p-6">
+          <p class="text-gray-300 text-sm mb-4">
+            Confirma a recusa da solicitação
+            <strong id="vinculo-recusar-id" class="text-white">SOL-00000</strong>?
+            O Seller poderá enviar uma nova solicitação depois.
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button
+              onclick="fecharModalRecusarVinculo()"
+              class="px-4 py-2 border border-gray-600 rounded text-gray-300 hover:bg-gray-700 font-medium transition"
+            >
+              Cancelar
+            </button>
+            <button
+              onclick="confirmarRecusarVinculo()"
+              class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded shadow-sm font-medium transition"
+            >
+              Recusar solicitação
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Right Drawer for Order History -->
     <div
       id="drawer-overlay"
@@ -1072,6 +1159,202 @@
       let currentView = "dashboard";
       let currentOrderIdInDrawer = null;
 
+      let currentVinculoRequestId = null;
+      let pendingRecusarRequestId = null;
+      let vinculoFormRequestId = null;
+      let drawerMode = "order";
+
+      // ============================================================
+      // VÍNCULO STORE (compartilhado com TRACKen Seller)
+      // Servir ambos os mocks no mesmo origin para compartilhar localStorage.
+      // ============================================================
+      const VINCULO_STORE_KEY = "tracken_vinculo_store";
+      const DEMO_SELLER = {
+        sellerId: "SEL-00842",
+        nome: "Artur Silva",
+        empresa: "Mundo dos Eletros",
+        cnpj: "12.345.678/0001-90",
+        email: "contato@mundodoseletros.com.br",
+        telefone: "(11) 98888-0001",
+        cep: "01001-000",
+      };
+      const VINCULO_STATUS_LABEL = {
+        AGUARDANDO_ANALISE: "Aguardando análise",
+        EM_CONTATO: "Em contato",
+        APROVADA: "Aprovada",
+        RECUSADA: "Recusada",
+        CADASTRO_EM_CRIACAO: "Cadastro em criação",
+        CONCLUIDA: "Concluída",
+      };
+
+      function emptyVinculoStore() {
+        return {
+          seller: { ...DEMO_SELLER },
+          requests: [],
+          customers: [],
+          logins: [],
+          events: [],
+        };
+      }
+
+      function loadVinculoStore() {
+        const raw = localStorage.getItem(VINCULO_STORE_KEY);
+        if (!raw) {
+          const store = emptyVinculoStore();
+          store.events.push({
+            event: "seller_account_created",
+            at: new Date().toISOString(),
+            payload: { sellerId: DEMO_SELLER.sellerId },
+          });
+          saveVinculoStore(store);
+          return store;
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed.seller) parsed.seller = { ...DEMO_SELLER };
+          parsed.requests = parsed.requests || [];
+          parsed.customers = parsed.customers || [];
+          parsed.logins = parsed.logins || [];
+          parsed.events = parsed.events || [];
+          return parsed;
+        } catch (e) {
+          const store = emptyVinculoStore();
+          saveVinculoStore(store);
+          return store;
+        }
+      }
+
+      function saveVinculoStore(store) {
+        localStorage.setItem(VINCULO_STORE_KEY, JSON.stringify(store));
+        updateVinculoNavBadge();
+      }
+
+      function trackVinculoEvent(name, payload = {}) {
+        const store = loadVinculoStore();
+        store.events.push({
+          event: name,
+          at: new Date().toISOString(),
+          payload,
+        });
+        saveVinculoStore(store);
+        return store;
+      }
+
+      function nextVinculoId(prefix, list, field, start) {
+        let max = start - 1;
+        (list || []).forEach((item) => {
+          const n = parseInt(String(item[field] || "").replace(/\D/g, ""), 10);
+          if (!Number.isNaN(n) && n > max) max = n;
+        });
+        return `${prefix}-${String(max + 1).padStart(5, "0")}`;
+      }
+
+      function phoneToWa(phone) {
+        const digits = String(phone || "").replace(/\D/g, "");
+        if (!digits) return "https://wa.me/5511999999999";
+        const withCountry = digits.startsWith("55") ? digits : "55" + digits;
+        return `https://wa.me/${withCountry}`;
+      }
+
+      function nowIso() {
+        return new Date().toISOString();
+      }
+
+      function formatVinculoDate(iso) {
+        if (!iso) return "—";
+        const d = new Date(iso);
+        return d.toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function getVinculoStatusColor(status) {
+        switch (status) {
+          case "AGUARDANDO_ANALISE":
+            return "bg-yellow-100 text-yellow-700 border-yellow-200";
+          case "EM_CONTATO":
+            return "bg-blue-100 text-blue-700 border-blue-200";
+          case "APROVADA":
+            return "bg-emerald-100 text-emerald-700 border-emerald-200";
+          case "RECUSADA":
+            return "bg-red-100 text-red-700 border-red-200";
+          case "CADASTRO_EM_CRIACAO":
+            return "bg-orange-100 text-orange-700 border-orange-200";
+          case "CONCLUIDA":
+            return "bg-green-100 text-green-700 border-green-200";
+          default:
+            return "bg-gray-100 text-gray-700 border-gray-200";
+        }
+      }
+
+      function updateVinculoNavBadge() {
+        const store = loadVinculoStore();
+        const novas = store.requests.filter((r) => r.status === "AGUARDANDO_ANALISE").length;
+        ["vinculo-nav-badge", "vinculo-nav-badge-mobile"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (novas > 0) {
+            el.textContent = String(novas);
+            el.classList.remove("hidden");
+          } else {
+            el.textContent = "N";
+            el.classList.add("hidden");
+          }
+        });
+      }
+
+      function resetVinculoStoreKeepSeller() {
+        const store = emptyVinculoStore();
+        store.events.push({
+          event: "seller_account_created",
+          at: nowIso(),
+          payload: { sellerId: DEMO_SELLER.sellerId },
+        });
+        saveVinculoStore(store);
+      }
+
+      function showToastOps(message) {
+        const toast = document.createElement("div");
+        toast.className =
+          "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 text-sm";
+        toast.innerText = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => toast.remove(), 300);
+        }, 2200);
+      }
+
+      function getVinculoRequest(requestId) {
+        return loadVinculoStore().requests.find((r) => r.requestId === requestId);
+      }
+
+      function patchVinculoRequest(requestId, mutator, eventName, extraPayload = {}) {
+        const store = loadVinculoStore();
+        const req = store.requests.find((r) => r.requestId === requestId);
+        if (!req) return null;
+        mutator(req, store);
+        req.updatedAt = nowIso();
+        if (eventName) {
+          store.events.push({
+            event: eventName,
+            at: req.updatedAt,
+            payload: {
+              sellerId: req.sellerId,
+              requestId: req.requestId,
+              carrierId: req.carrierId,
+              ...extraPayload,
+            },
+          });
+        }
+        saveVinculoStore(store);
+        return req;
+      }
+
       function toggleMobileSidebar(open) {
         const sidebar = document.getElementById("mobile-sidebar");
         const overlay = document.getElementById("sidebar-overlay");
@@ -1165,29 +1448,31 @@
       function resetDemo() {
         localStorage.removeItem("tracken_fnvj_demo_data");
         localStorage.removeItem("tracken_pagamento_configurado");
+        resetVinculoStoreKeepSeller();
         pagamentoConfigurado = false;
         selectedOrderIds.clear();
+        currentVinculoRequestId = null;
+        vinculoFormRequestId = null;
         closeDrawer();
         closeModal();
         fecharModalConfigPagamento();
         fecharModalPagamentoNecessario();
+        fecharModalRecusarVinculo();
         initData();
-        // Re-render current view
-        if (currentView === 'sac-reputacao') {
-          renderReputacao(document.getElementById('view-container'));
-        } else if (currentView === 'dashboard') {
-          renderDashboard(document.getElementById('view-container'));
+        if (currentView === "sac-reputacao") {
+          renderReputacao(document.getElementById("view-container"));
+        } else if (currentView === "dashboard") {
+          renderDashboard(document.getElementById("view-container"));
+        } else if (
+          currentView === "vinculo" ||
+          currentView === "vinculo-cadastro" ||
+          currentView === "vinculo-login"
+        ) {
+          navigate("vinculo");
         } else {
           navigate(currentView);
         }
-        const toast = document.createElement('div');
-        toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300';
-        toast.innerText = 'Demonstração restaurada com sucesso.';
-        document.body.appendChild(toast);
-        setTimeout(() => {
-          toast.style.opacity = '0';
-          setTimeout(() => toast.remove(), 300);
-        }, 2000);
+        showToastOps("Demonstração restaurada com sucesso.");
       }
 
       function formatDate(date) {
@@ -1239,6 +1524,16 @@
           renderDashboard(container);
         } else if (view === "sac-reputacao") {
           renderReputacao(container);
+        } else if (
+          view === "vinculo" ||
+          view === "vinculo-cadastro" ||
+          view === "vinculo-login"
+        ) {
+          document.getElementById("nav-vinculo")?.classList.add("nav-item-active");
+          document.getElementById("nav-vinculo-mobile")?.classList.add("nav-item-active");
+          if (view === "vinculo") renderSolicitacoesVinculo(container);
+          else if (view === "vinculo-cadastro") renderCadastroCliente(container);
+          else renderCriarLogin(container);
         } else if (view.startsWith("operacao-")) {
           renderOperacaoSub(view, container);
         } else {
@@ -1640,6 +1935,7 @@
       // --- Drawer ---
       function openDrawer(orderId) {
         currentOrderIdInDrawer = orderId;
+        drawerMode = "order";
         const order = orders.find((o) => o.id === orderId);
         if (!order) return;
         document
@@ -1656,6 +1952,8 @@
         document.getElementById("drawer-overlay").classList.remove("active");
         document.getElementById("drawer-panel").classList.remove("active");
         currentOrderIdInDrawer = null;
+        if (drawerMode === "vinculo") currentVinculoRequestId = null;
+        drawerMode = "order";
       }
 
       function renderDrawerContent(order) {
@@ -1795,14 +2093,598 @@
         }
       }
 
+      // ============================================================
+      // SOLICITAÇÕES DE VÍNCULO
+      // ============================================================
+      function renderSolicitacoesVinculo(container) {
+        updateVinculoNavBadge();
+        const store = loadVinculoStore();
+        const requests = [...store.requests].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        const novas = requests.filter((r) => r.status === "AGUARDANDO_ANALISE").length;
+        const emAnalise = requests.filter((r) => r.status === "EM_CONTATO").length;
+        const aprovadas = requests.filter((r) =>
+          ["APROVADA", "CADASTRO_EM_CRIACAO", "CONCLUIDA"].includes(r.status)
+        ).length;
+        const recusadas = requests.filter((r) => r.status === "RECUSADA").length;
+
+        container.innerHTML = `
+    <div class="mb-6">
+      <div class="text-sm text-gray-400 mb-1 flex items-center">
+        Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+        <span class="text-gray-600 font-medium">Solicitações de vínculo</span>
+      </div>
+      <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
+        <i class="fa-solid fa-link text-tracken-green mr-2"></i>
+        Solicitações de vínculo
+      </h1>
+      <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
+        Analise pedidos de vínculo enviados pelo TRACKen Seller. A conversão só ocorre após cadastro e login no ambiente da transportadora.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
+        <div class="text-xs text-gray-500 mb-1">Novas solicitações</div>
+        <div class="text-xl font-bold text-gray-800">${novas}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-blue-200 shadow-seller bg-blue-50">
+        <div class="text-xs text-blue-600 mb-1">Em análise</div>
+        <div class="text-xl font-bold text-blue-700">${emAnalise}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-green-200 shadow-seller bg-green-50">
+        <div class="text-xs text-green-600 mb-1">Aprovadas</div>
+        <div class="text-xl font-bold text-green-700">${aprovadas}</div>
+      </div>
+      <div class="bg-white rounded p-4 border border-red-200 shadow-seller bg-red-50">
+        <div class="text-xs text-red-600 mb-1">Recusadas</div>
+        <div class="text-xl font-bold text-red-700">${recusadas}</div>
+      </div>
+    </div>
+    <div class="bg-white p-3 rounded-t border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <select id="filter-status-vinculo" onchange="renderTableRowsVinculo()" class="border border-gray-300 text-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-tracken-green w-full sm:w-auto">
+        <option value="all">Todos os Status</option>
+        <option value="AGUARDANDO_ANALISE">Aguardando análise</option>
+        <option value="EM_CONTATO">Em contato</option>
+        <option value="APROVADA">Aprovada</option>
+        <option value="CADASTRO_EM_CRIACAO">Cadastro em criação</option>
+        <option value="CONCLUIDA">Concluída</option>
+        <option value="RECUSADA">Recusada</option>
+      </select>
+    </div>
+    <div class="bg-white rounded-b shadow-seller overflow-hidden border border-t-0 border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead><tr class="table-header-dark text-xs tracking-wider">
+            <th class="p-3 font-medium">ID</th>
+            <th class="p-3 font-medium">SELLER</th>
+            <th class="p-3 font-medium">EMPRESA</th>
+            <th class="p-3 font-medium">CNPJ</th>
+            <th class="p-3 font-medium">E-MAIL / TELEFONE</th>
+            <th class="p-3 font-medium">DATA</th>
+            <th class="p-3 font-medium">STATUS</th>
+            <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
+          </tr></thead>
+          <tbody id="table-body-vinculo"></tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-100 flex items-center justify-between text-gray-500 text-xs">
+        <div id="vinculo-table-count">Mostrando 0 registros</div>
+      </div>
+    </div>
+  `;
+        renderTableRowsVinculo();
+      }
+
+      function renderTableRowsVinculo() {
+        const tbody = document.getElementById("table-body-vinculo");
+        if (!tbody) return;
+        const statusFilter =
+          document.getElementById("filter-status-vinculo")?.value || "all";
+        const store = loadVinculoStore();
+        let list = [...store.requests].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        if (statusFilter !== "all") {
+          list = list.filter((r) => r.status === statusFilter);
+        }
+        const countEl = document.getElementById("vinculo-table-count");
+        if (countEl) {
+          countEl.textContent = `Mostrando ${list.length} de ${store.requests.length} registros`;
+        }
+        if (!list.length) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="p-8 text-center text-gray-500">
+                <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-3 block"></i>
+                <p class="font-medium text-gray-700">Nenhuma solicitação de vínculo</p>
+                <p class="text-xs mt-1 max-w-md mx-auto">
+                  As solicitações criadas em Encontre sua Transportadora aparecem aqui quando os dois mocks são servidos no mesmo origin (ex.: pasta mocks em localhost).
+                </p>
+              </td>
+            </tr>`;
+          return;
+        }
+        tbody.innerHTML = list
+          .map((req) => {
+            const snap = req.sellerSnapshot || {};
+            const menuId = `menu-${req.requestId}`;
+            return `
+              <tr class="border-b border-gray-100 table-row-hover transition-colors relative">
+                <td class="p-3"><div class="font-medium text-gray-800">${req.requestId}</div><div class="text-[10px] text-gray-400">${req.sellerId}</div></td>
+                <td class="p-3 text-gray-800">${snap.nome || "—"}</td>
+                <td class="p-3 text-gray-800">${snap.empresa || "—"}</td>
+                <td class="p-3 text-gray-600">${snap.cnpj || "—"}</td>
+                <td class="p-3"><div class="text-gray-800">${snap.email || "—"}</div><div class="text-xs text-gray-500">${snap.telefone || ""}</div></td>
+                <td class="p-3 text-gray-600 whitespace-nowrap">${formatVinculoDate(req.createdAt)}</td>
+                <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-md border ${getVinculoStatusColor(req.status)} font-medium inline-flex items-center">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></td>
+                <td class="p-3 text-center relative">
+                  <button onclick="toggleActionMenu('${req.requestId}', event)" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                  <div id="${menuId}" class="action-menu absolute right-8 top-8 w-52 bg-white border border-gray-200 shadow-lg rounded-md z-10 text-left overflow-hidden">
+                    ${vinculoActionMenuHtml(req)}
+                  </div>
+                </td>
+              </tr>`;
+          })
+          .join("");
+      }
+
+      function vinculoActionMenuHtml(req) {
+        const canContact = ["AGUARDANDO_ANALISE", "EM_CONTATO", "APROVADA", "CADASTRO_EM_CRIACAO"].includes(req.status);
+        const canApprove = ["AGUARDANDO_ANALISE", "EM_CONTATO"].includes(req.status);
+        const canReject = ["AGUARDANDO_ANALISE", "EM_CONTATO"].includes(req.status);
+        const canCadastro = req.status === "APROVADA";
+        const canLogin = req.status === "CADASTRO_EM_CRIACAO";
+        return `
+          <button onclick="openVinculoDrawer('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-circle-info w-5 text-gray-400"></i> Ver detalhes</button>
+          ${canContact ? `<button onclick="entrarEmContatoVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-brands fa-whatsapp w-5 text-gray-400"></i> Entrar em contato</button>` : ""}
+          ${canApprove ? `<button onclick="aprovarVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-check w-5 text-gray-400"></i> Aprovar solicitação</button>` : ""}
+          ${canReject ? `<button onclick="abrirModalRecusarVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"><i class="fa-solid fa-ban w-5 text-red-400"></i> Recusar solicitação</button>` : ""}
+          ${canCadastro ? `<button onclick="irParaCadastroVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-user-plus w-5 text-gray-400"></i> Criar cadastro</button>` : ""}
+          ${canLogin ? `<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-key w-5 text-gray-400"></i> Criar login</button>` : ""}
+        `;
+      }
+
+      function openVinculoDrawer(requestId) {
+        const req = getVinculoRequest(requestId);
+        if (!req) return;
+        drawerMode = "vinculo";
+        currentVinculoRequestId = requestId;
+        document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("active"));
+        document.getElementById("drawer-title").innerText = `Solicitação ${req.requestId}`;
+        renderVinculoDrawerContent(req);
+        document.getElementById("drawer-overlay").classList.add("active");
+        document.getElementById("drawer-panel").classList.add("active");
+      }
+
+      function renderVinculoDrawerContent(req) {
+        const content = document.getElementById("drawer-content");
+        const footer = document.getElementById("drawer-footer");
+        const snap = req.sellerSnapshot || {};
+        const hist = [...(req.historico || [])].reverse();
+        content.innerHTML = `
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6 shadow-seller">
+            <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+              <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">ID de origem do Seller</span> <span class="font-medium">${req.sellerId}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Seller</span> <span class="font-medium">${snap.nome || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Empresa</span> <span class="font-medium">${snap.empresa || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">CNPJ</span> <span class="font-medium">${snap.cnpj || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Telefone</span> <span class="font-medium">${snap.telefone || "—"}</span></div>
+              <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">E-mail</span> <span class="font-medium">${snap.email || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Status</span> <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getVinculoStatusColor(req.status)} font-medium inline-block">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Protocolo</span> <span class="font-medium">${req.requestId}</span></div>
+              ${req.carrierCustomerId ? `<div><span class="text-gray-500 block text-xs uppercase">Cadastro</span> <span class="font-medium">${req.carrierCustomerId}</span></div>` : ""}
+              ${req.carrierLoginId ? `<div><span class="text-gray-500 block text-xs uppercase">Login</span> <span class="font-medium">${req.carrierLoginId}</span></div>` : ""}
+            </div>
+            ${req.status === "APROVADA" ? `<p class="text-xs text-emerald-700 mt-4 bg-emerald-50 border border-emerald-100 rounded p-2">Solicitação aprovada. Continue o processo criando o cadastro do Seller no ambiente da transportadora.</p>` : ""}
+            ${req.status === "CADASTRO_EM_CRIACAO" ? `<p class="text-xs text-orange-700 mt-4 bg-orange-50 border border-orange-100 rounded p-2">Cadastro criado. Crie o login para concluir o vínculo. O Seller ainda não está convertido.</p>` : ""}
+            ${req.status === "CONCLUIDA" ? `<p class="text-xs text-green-700 mt-4 bg-green-50 border border-green-100 rounded p-2">Vínculo concluído. Seller convertido.</p>` : ""}
+          </div>
+          <h3 class="font-semibold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-list-ul mr-2 text-gray-400"></i> Histórico</h3>
+          <div class="timeline-container">
+            ${hist
+              .map((event, index) => {
+                const isNewest = index === 0;
+                return `
+                  <div class="timeline-item">
+                    <div class="timeline-dot ${isNewest ? "active" : ""}"></div>
+                    <div class="ml-2 bg-white border ${isNewest ? "border-gray-300 shadow-sm" : "border-gray-100"} p-3 rounded-lg relative">
+                      <div class="text-xs text-gray-500 mb-1">${formatVinculoDate(event.at)}</div>
+                      <div class="text-sm font-medium text-gray-700">${event.action}</div>
+                    </div>
+                  </div>`;
+              })
+              .join("")}
+          </div>
+        `;
+
+        const buttons = [];
+        if (["AGUARDANDO_ANALISE", "EM_CONTATO", "APROVADA", "CADASTRO_EM_CRIACAO"].includes(req.status)) {
+          buttons.push(`<button onclick="entrarEmContatoVinculo('${req.requestId}')" class="w-full py-2.5 bg-[#25D366] hover:bg-[#1ebe5c] text-white rounded shadow-sm font-medium transition flex items-center justify-center"><i class="fa-brands fa-whatsapp mr-2 text-lg"></i> Entrar em contato</button>`);
+        }
+        if (["AGUARDANDO_ANALISE", "EM_CONTATO"].includes(req.status)) {
+          buttons.push(`<button onclick="aprovarVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Aprovar solicitação</button>`);
+          buttons.push(`<button onclick="abrirModalRecusarVinculo('${req.requestId}')" class="w-full py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded shadow-sm font-medium transition">Recusar solicitação</button>`);
+        }
+        if (req.status === "APROVADA") {
+          buttons.push(`<button onclick="irParaCadastroVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Criar cadastro</button>`);
+        }
+        if (req.status === "CADASTRO_EM_CRIACAO") {
+          buttons.push(`<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Criar login</button>`);
+        }
+        if (buttons.length) {
+          footer.innerHTML = `<div class="space-y-2">${buttons.join("")}</div>`;
+          footer.style.display = "block";
+        } else {
+          footer.innerHTML = "";
+          footer.style.display = "none";
+        }
+      }
+
+      function refreshVinculoUi(requestId) {
+        updateVinculoNavBadge();
+        if (currentView === "vinculo") {
+          renderSolicitacoesVinculo(document.getElementById("view-container"));
+        }
+        if (drawerMode === "vinculo" && currentVinculoRequestId === requestId) {
+          const req = getVinculoRequest(requestId);
+          if (req) renderVinculoDrawerContent(req);
+        }
+      }
+
+      function entrarEmContatoVinculo(requestId) {
+        const req = getVinculoRequest(requestId);
+        if (!req) return;
+        if (req.status === "AGUARDANDO_ANALISE") {
+          patchVinculoRequest(requestId, (r) => {
+            r.status = "EM_CONTATO";
+            r.historico.push({
+              at: nowIso(),
+              action: "Transportadora entrou em contato com o Seller",
+              type: "carrier",
+            });
+          }, "carrier_link_request_contacted");
+        } else {
+          trackVinculoEvent("carrier_link_request_contacted", {
+            sellerId: req.sellerId,
+            requestId: req.requestId,
+            carrierId: req.carrierId,
+          });
+        }
+        refreshVinculoUi(requestId);
+        window.open(phoneToWa(req.sellerSnapshot?.telefone || req.carrierPhone), "_blank");
+      }
+
+      function aprovarVinculo(requestId) {
+        const req = getVinculoRequest(requestId);
+        if (!req || !["AGUARDANDO_ANALISE", "EM_CONTATO"].includes(req.status)) return;
+        patchVinculoRequest(requestId, (r) => {
+          r.status = "APROVADA";
+          r.historico.push({
+            at: nowIso(),
+            action: "Solicitação aprovada. Cadastro e login ainda pendentes.",
+            type: "carrier",
+          });
+        }, "carrier_link_request_approved");
+        refreshVinculoUi(requestId);
+        openVinculoDrawer(requestId);
+        showToastOps("Solicitação aprovada. Crie o cadastro para continuar.");
+      }
+
+      function abrirModalRecusarVinculo(requestId) {
+        pendingRecusarRequestId = requestId;
+        document.getElementById("vinculo-recusar-id").innerText = requestId;
+        document.getElementById("vinculo-recusar-modal").classList.add("active");
+      }
+
+      function fecharModalRecusarVinculo() {
+        document.getElementById("vinculo-recusar-modal")?.classList.remove("active");
+        pendingRecusarRequestId = null;
+      }
+
+      function confirmarRecusarVinculo() {
+        const requestId = pendingRecusarRequestId;
+        if (!requestId) return;
+        patchVinculoRequest(requestId, (r) => {
+          r.status = "RECUSADA";
+          r.historico.push({
+            at: nowIso(),
+            action: "Solicitação recusada pela transportadora",
+            type: "carrier",
+          });
+        }, "carrier_link_request_rejected");
+        fecharModalRecusarVinculo();
+        closeDrawer();
+        refreshVinculoUi(requestId);
+        showToastOps("Solicitação recusada.");
+      }
+
+      function irParaCadastroVinculo(requestId) {
+        vinculoFormRequestId = requestId;
+        closeDrawer();
+        navigate("vinculo-cadastro");
+      }
+
+      function irParaLoginVinculo(requestId) {
+        vinculoFormRequestId = requestId;
+        closeDrawer();
+        navigate("vinculo-login");
+      }
+
+      function inputClassVinculo() {
+        return "w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-tracken-green bg-white";
+      }
+
+      function readonlyClassVinculo() {
+        return "w-full border border-gray-200 rounded px-3 py-2 text-sm text-gray-600 bg-gray-50";
+      }
+
+      function renderCadastroCliente(container) {
+        const req = getVinculoRequest(vinculoFormRequestId);
+        if (!req) {
+          container.innerHTML = `<div class="text-gray-500 p-8">Solicitação não encontrada. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
+          return;
+        }
+        if (req.status !== "APROVADA") {
+          container.innerHTML = `<div class="text-gray-500 p-8">Esta solicitação não está pronta para cadastro. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
+          return;
+        }
+        const snap = req.sellerSnapshot || {};
+        container.innerHTML = `
+          <div class="mb-6">
+            <div class="text-sm text-gray-400 mb-1 flex items-center">
+              Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
+              <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              <span class="text-gray-600 font-medium">Criar cadastro</span>
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
+              <i class="fa-solid fa-user-plus text-tracken-green mr-2"></i> Criar cadastro
+            </h1>
+            <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
+              Cadastro do cliente no ambiente da transportadora. Dados do TRACKen Seller já preenchidos. Complete apenas o que faltar.
+            </p>
+          </div>
+          <form id="form-cadastro-vinculo" onsubmit="salvarCadastroVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-3xl space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID de origem do Seller</label>
+                <input type="text" value="${req.sellerId}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID da solicitação</label>
+                <input type="text" value="${req.requestId}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome</label>
+                <input name="nome" type="text" value="${snap.nome || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome da loja / Razão social</label>
+                <input name="empresa" type="text" value="${snap.empresa || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CNPJ</label>
+                <input name="cnpj" type="text" value="${snap.cnpj || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
+                <input name="email" type="email" value="${snap.email || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Telefone</label>
+                <input name="telefone" type="text" value="${snap.telefone || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CEP</label>
+                <input name="cep" type="text" value="${snap.cep || ""}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Média volumetria</label>
+                <input name="mediaVolumetria" type="text" placeholder="Campo específico da transportadora" class="${inputClassVinculo()}" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Observações internas</label>
+                <textarea name="observacoes" rows="3" placeholder="Complete apenas o que estiver faltando" class="${inputClassVinculo()}"></textarea>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+              <button type="button" onclick="navigate('vinculo')" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
+              <button type="submit" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium">Salvar cadastro</button>
+            </div>
+          </form>
+        `;
+      }
+
+      function salvarCadastroVinculo(event) {
+        event.preventDefault();
+        const req = getVinculoRequest(vinculoFormRequestId);
+        if (!req) return;
+        const form = event.target;
+        const store = loadVinculoStore();
+        const carrierCustomerId = nextVinculoId("CLI", store.customers, "carrierCustomerId", 56391);
+        const customer = {
+          carrierCustomerId,
+          sellerId: req.sellerId,
+          requestId: req.requestId,
+          nome: form.nome.value,
+          empresa: form.empresa.value,
+          cnpj: form.cnpj.value,
+          email: form.email.value,
+          telefone: form.telefone.value,
+          cep: form.cep.value,
+          mediaVolumetria: form.mediaVolumetria.value,
+          observacoes: form.observacoes.value,
+          createdAt: nowIso(),
+        };
+        store.customers.push(customer);
+        const target = store.requests.find((r) => r.requestId === req.requestId);
+        target.carrierCustomerId = carrierCustomerId;
+        target.status = "CADASTRO_EM_CRIACAO";
+        target.updatedAt = nowIso();
+        target.historico.push({
+          at: target.updatedAt,
+          action: `Cadastro criado (${carrierCustomerId}). Login ainda pendente.`,
+          type: "carrier",
+        });
+        store.events.push({
+          event: "carrier_customer_created",
+          at: target.updatedAt,
+          payload: {
+            sellerId: req.sellerId,
+            requestId: req.requestId,
+            carrierCustomerId,
+          },
+        });
+        saveVinculoStore(store);
+        showToastOps("Cadastro criado. Crie o login para concluir o vínculo.");
+        irParaLoginVinculo(req.requestId);
+      }
+
+      function renderCriarLogin(container) {
+        const req = getVinculoRequest(vinculoFormRequestId);
+        if (!req) {
+          container.innerHTML = `<div class="text-gray-500 p-8">Solicitação não encontrada. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
+          return;
+        }
+        if (req.status !== "CADASTRO_EM_CRIACAO" || !req.carrierCustomerId) {
+          container.innerHTML = `<div class="text-gray-500 p-8">Crie o cadastro antes do login. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
+          return;
+        }
+        const snap = req.sellerSnapshot || {};
+        const email = snap.email || "";
+        const username = email.includes("@") ? email.split("@")[0] : "seller";
+        container.innerHTML = `
+          <div class="mb-6">
+            <div class="text-sm text-gray-400 mb-1 flex items-center">
+              Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
+              <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              <span class="text-gray-600 font-medium">Criar login</span>
+            </div>
+            <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
+              <i class="fa-solid fa-key text-tracken-green mr-2"></i> Criar login
+            </h1>
+            <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
+              Credencial de acesso associada ao cadastro. Entidade distinta do cadastro do cliente.
+            </p>
+          </div>
+          <form id="form-login-vinculo" onsubmit="salvarLoginVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-3xl space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID de origem do Seller</label>
+                <input type="text" value="${req.sellerId}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID da solicitação</label>
+                <input type="text" value="${req.requestId}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ID do cadastro</label>
+                <input type="text" value="${req.carrierCustomerId}" readonly class="${readonlyClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Usuário</label>
+                <input name="username" type="text" value="${username}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
+                <input name="email" type="email" value="${email}" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Permissões</label>
+                <select name="permissoes" class="${inputClassVinculo()}">
+                  <option value="operacional">Operacional</option>
+                  <option value="visualizacao">Somente visualização</option>
+                  <option value="admin_loja">Admin da loja</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Senha</label>
+                <input name="senha" type="password" required minlength="6" class="${inputClassVinculo()}" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Confirmar senha</label>
+                <input name="senhaConfirmacao" type="password" required minlength="6" class="${inputClassVinculo()}" />
+              </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+              <button type="button" onclick="navigate('vinculo')" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
+              <button type="submit" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium">Criar login e concluir vínculo</button>
+            </div>
+          </form>
+        `;
+      }
+
+      function salvarLoginVinculo(event) {
+        event.preventDefault();
+        const req = getVinculoRequest(vinculoFormRequestId);
+        if (!req) return;
+        const form = event.target;
+        if (form.senha.value !== form.senhaConfirmacao.value) {
+          showToastOps("As senhas não coincidem.");
+          return;
+        }
+        const store = loadVinculoStore();
+        const carrierLoginId = nextVinculoId("USR", store.logins, "carrierLoginId", 88291);
+        store.logins.push({
+          carrierLoginId,
+          carrierCustomerId: req.carrierCustomerId,
+          sellerId: req.sellerId,
+          requestId: req.requestId,
+          username: form.username.value,
+          email: form.email.value,
+          permissoes: form.permissoes.value,
+          createdAt: nowIso(),
+        });
+        const target = store.requests.find((r) => r.requestId === req.requestId);
+        target.carrierLoginId = carrierLoginId;
+        target.status = "CONCLUIDA";
+        target.updatedAt = nowIso();
+        target.historico.push({
+          at: target.updatedAt,
+          action: `Login criado (${carrierLoginId}). Vínculo concluído. Seller convertido.`,
+          type: "carrier",
+        });
+        store.events.push({
+          event: "carrier_login_created",
+          at: target.updatedAt,
+          payload: {
+            sellerId: req.sellerId,
+            requestId: req.requestId,
+            carrierCustomerId: req.carrierCustomerId,
+            carrierLoginId,
+          },
+        });
+        store.events.push({
+          event: "seller_conversion_completed",
+          at: target.updatedAt,
+          payload: {
+            sellerId: req.sellerId,
+            requestId: req.requestId,
+            carrierCustomerId: req.carrierCustomerId,
+            carrierLoginId,
+          },
+        });
+        saveVinculoStore(store);
+        showToastOps("Login criado. Seller convertido.");
+        navigate("vinculo");
+        openVinculoDrawer(req.requestId);
+      }
+
       // --- Inicialização ---
       window.onload = function () {
         initData();
+        loadVinculoStore();
+        updateVinculoNavBadge();
         navigate("dashboard");
-        // Abrir grupos de navegação por padrão (opcional)
-        // document.querySelectorAll('.nav-group-toggle').forEach(link => {
-        //   toggleNavGroup(link);
-        // });
+        window.addEventListener("storage", function (event) {
+          if (event.key !== VINCULO_STORE_KEY) return;
+          updateVinculoNavBadge();
+          if (currentView === "vinculo") {
+            renderSolicitacoesVinculo(document.getElementById("view-container"));
+          }
+        });
       };
     </script>
   </body>
