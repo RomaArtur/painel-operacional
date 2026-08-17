@@ -1445,7 +1445,7 @@
 
       // ============================================================
       // VÍNCULO STORE (compartilhado com TRACKen Seller)
-      // Servir ambos os mocks no mesmo origin para compartilhar localStorage.
+      // Mesmo origin: localStorage. Vercel: import via ?importVinculo=
       // ============================================================
       const VINCULO_STORE_KEY = "tracken_vinculo_store";
       const DEMO_SELLER = {
@@ -1506,6 +1506,37 @@
       function saveVinculoStore(store) {
         localStorage.setItem(VINCULO_STORE_KEY, JSON.stringify(store));
         updateVinculoNavBadge();
+      }
+
+      function consumeVinculoImportFromUrl() {
+        const params = new URLSearchParams(location.search);
+        const packed = params.get("importVinculo");
+        if (!packed) return false;
+        try {
+          const req = JSON.parse(decodeURIComponent(escape(atob(packed))));
+          if (!req || !req.requestId) return false;
+          const store = loadVinculoStore();
+          const idx = store.requests.findIndex((r) => r.requestId === req.requestId);
+          if (idx >= 0) store.requests[idx] = { ...store.requests[idx], ...req };
+          else store.requests.push(req);
+          store.events.push({
+            event: "carrier_link_request_imported",
+            at: new Date().toISOString(),
+            payload: {
+              sellerId: req.sellerId,
+              requestId: req.requestId,
+              carrierId: req.carrierId,
+            },
+          });
+          saveVinculoStore(store);
+        } catch (e) {
+          console.warn("Falha ao importar vínculo da URL", e);
+          return false;
+        }
+        const url = new URL(location.href);
+        url.searchParams.delete("importVinculo");
+        history.replaceState({}, "", url.pathname + url.search + url.hash);
+        return true;
       }
 
       function trackVinculoEvent(name, payload = {}) {
@@ -2523,7 +2554,7 @@
                 <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-3 block"></i>
                 <p class="font-medium text-gray-700">Nenhuma solicitação de vínculo</p>
                 <p class="text-xs mt-1 max-w-md mx-auto">
-                  As solicitações criadas em Encontre sua Transportadora aparecem aqui quando os dois mocks são servidos no mesmo origin (ex.: pasta mocks em localhost).
+                  As solicitações do New Seller neste mesmo origin aparecem sozinhas. Na Vercel, envie pelo New Seller com a URL deste operacional — a lista abre com <code class="text-gray-600">?importVinculo=</code>.
                 </p>
               </td>
             </tr>`;
@@ -3000,8 +3031,9 @@
       window.onload = function () {
         initData();
         loadVinculoStore();
+        const imported = consumeVinculoImportFromUrl();
         updateVinculoNavBadge();
-        navigate("sac-reputacao");
+        navigate(imported ? "vinculo" : "sac-reputacao");
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
