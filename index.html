@@ -977,6 +977,51 @@
       </div>
     </div>
 
+    <!-- Modal compartilhar login com o seller -->
+    <div
+      id="vinculo-share-modal"
+      class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onclick="if(event.target===this) fecharModalShareVinculo()"
+    >
+      <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+            <i class="fa-solid fa-share-nodes text-tracken-green mr-2"></i> Compartilhar login
+          </h3>
+          <button onclick="fecharModalShareVinculo()" class="text-gray-400 hover:text-gray-600 transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-gray-600">
+            Envie o acesso ao seller. A senha aparece só nesta tela.
+          </p>
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm space-y-2">
+            <div class="flex justify-between gap-3"><span class="text-gray-500">E-mail</span><span id="vinculo-share-email" class="font-medium text-gray-800 text-right break-all"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-500">Usuário</span><span id="vinculo-share-user" class="font-medium text-gray-800 text-right break-all"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-500">Senha</span><span id="vinculo-share-pass" class="font-medium text-gray-800 text-right"></span></div>
+            <div class="flex justify-between gap-3"><span class="text-gray-500">Perfil</span><span class="font-medium text-gray-800">Cliente</span></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button type="button" onclick="enviarLoginVinculoEmail()" class="px-3 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-sm font-medium">
+              <i class="fa-solid fa-envelope mr-1"></i> E-mail
+            </button>
+            <button type="button" onclick="enviarLoginVinculoWhatsapp()" class="px-3 py-2 bg-[#25D366] hover:bg-[#1ebe5c] text-white rounded text-sm font-medium">
+              <i class="fa-brands fa-whatsapp mr-1"></i> WhatsApp
+            </button>
+            <button type="button" onclick="copiarLoginVinculo()" class="px-3 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-sm font-medium">
+              <i class="fa-solid fa-copy mr-1"></i> Copiar
+            </button>
+          </div>
+          <div class="flex justify-end pt-1">
+            <button type="button" onclick="fecharModalShareVinculo()" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium text-sm">
+              Concluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Right Drawer for Order History -->
     <div
       id="drawer-overlay"
@@ -1441,6 +1486,7 @@
       let currentVinculoRequestId = null;
       let pendingRecusarRequestId = null;
       let vinculoFormRequestId = null;
+      let pendingVinculoShare = null;
       let drawerMode = "order";
 
       // ============================================================
@@ -2868,7 +2914,7 @@
           </div>
           <form id="form-cadastro-vinculo" onsubmit="salvarCadastroVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-4xl space-y-8">
             <section>
-              <h2 class="text-sm font-semibold text-gray-800 mb-4">Dados obrigatórios</h2>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Identificação</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Documento (CNPJ/CPF) *</label>
@@ -2886,14 +2932,28 @@
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Telefone *</label>
                   <input name="telefone" type="text" required value="${escapeVinculoAttr(snap.telefone)}" class="${inputClassVinculo()}" />
                 </div>
-                <div>
+              </div>
+            </section>
+            <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Endereço</h2>
+              <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CEP *</label>
                   <input name="cep" type="text" required value="${escapeVinculoAttr(snap.cep)}" class="${inputClassVinculo()}" />
                 </div>
-                <div>
+                <div class="md:col-span-1">
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Número *</label>
                   <input name="numero" type="text" required placeholder="Nº" class="${inputClassVinculo()}" />
                 </div>
+                <div class="md:col-span-3">
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Complemento</label>
+                  <input name="complemento" type="text" placeholder="Apto, sala, bloco..." class="${inputClassVinculo()}" />
+                </div>
+              </div>
+            </section>
+            <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Fiscal</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ambiente *</label>
                   <select name="ambiente" required class="${inputClassVinculo()}">
@@ -2903,13 +2963,6 @@
                   </select>
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Vencimento *</label>
-                  <select name="vencimento" required class="${inputClassVinculo()}">
-                    <option value="">Dia do vencimento</option>
-                    ${[5, 10, 15, 20, 25].map((dia) => `<option value="${dia}">Dia ${String(dia).padStart(2, "0")}</option>`).join("")}
-                  </select>
-                </div>
-                <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CST *</label>
                   <select name="cst" required class="${inputClassVinculo()}">
                     <option value="">Selecione</option>
@@ -2927,16 +2980,12 @@
             </section>
             <section>
               <h2 class="text-sm font-semibold text-gray-800 mb-4">Outros</h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">E-mail</label>
                   <input name="email" type="email" value="${escapeVinculoAttr(snap.email)}" class="${inputClassVinculo()}" />
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Complemento de endereço</label>
-                  <input name="complemento" type="text" placeholder="Apto, sala, bloco..." class="${inputClassVinculo()}" />
-                </div>
-                <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Observações</label>
                   <textarea name="observacoes" rows="3" class="${inputClassVinculo()}"></textarea>
                 </div>
@@ -2983,7 +3032,6 @@
           numero: form.numero.value.trim(),
           ambiente: form.ambiente.value,
           ambienteLabel: ambienteLabels[form.ambiente.value] || form.ambiente.value,
-          vencimento: form.vencimento.value,
           cst: form.cst.value,
           cstLabel: cstLabels[form.cst.value] || form.cst.value,
           servicos,
@@ -3065,6 +3113,11 @@
                 <input name="whatsapp" type="text" required value="${escapeVinculoAttr(whatsapp)}" class="${inputClassVinculo()}" />
               </div>
               <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Perfis</label>
+                <input name="perfil" type="text" value="Cliente" readonly class="${readonlyClassVinculo()}" />
+                <p class="text-[11px] text-gray-400 mt-1">Padrão bloqueado: Cliente</p>
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Senha</label>
                 <input name="senha" type="password" required minlength="6" class="${inputClassVinculo()}" />
               </div>
@@ -3079,6 +3132,60 @@
             </div>
           </form>
         `;
+      }
+
+      function vinculoShareText(data) {
+        return [
+          "Seu acesso na transportadora foi criado.",
+          `E-mail: ${data.email}`,
+          `Usuário: ${data.username}`,
+          `Senha: ${data.senha}`,
+          "Perfil: Cliente",
+        ].join("\n");
+      }
+
+      function abrirModalShareVinculo(data) {
+        pendingVinculoShare = data;
+        document.getElementById("vinculo-share-email").innerText = data.email || "—";
+        document.getElementById("vinculo-share-user").innerText = data.username || "—";
+        document.getElementById("vinculo-share-pass").innerText = data.senha || "—";
+        document.getElementById("vinculo-share-modal").classList.add("active");
+      }
+
+      function fecharModalShareVinculo() {
+        const requestId = pendingVinculoShare?.requestId;
+        document.getElementById("vinculo-share-modal")?.classList.remove("active");
+        pendingVinculoShare = null;
+        navigate("vinculo");
+        if (requestId) openVinculoDrawer(requestId);
+      }
+
+      function enviarLoginVinculoEmail() {
+        if (!pendingVinculoShare) return;
+        const subject = encodeURIComponent("Acesso criado na transportadora");
+        const body = encodeURIComponent(vinculoShareText(pendingVinculoShare));
+        window.open(`mailto:${pendingVinculoShare.email}?subject=${subject}&body=${body}`);
+        showToastOps("Abrimos o e-mail para enviar o acesso ao seller.");
+      }
+
+      function enviarLoginVinculoWhatsapp() {
+        if (!pendingVinculoShare) return;
+        const url = `${phoneToWa(pendingVinculoShare.whatsapp)}?text=${encodeURIComponent(vinculoShareText(pendingVinculoShare))}`;
+        window.open(url, "_blank", "noopener");
+        showToastOps("Abrimos o WhatsApp para enviar o acesso ao seller.");
+      }
+
+      function copiarLoginVinculo() {
+        if (!pendingVinculoShare) return;
+        const text = vinculoShareText(pendingVinculoShare);
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).then(
+            () => showToastOps("Dados copiados. Cole no canal do seller."),
+            () => showToastOps("Não foi possível copiar.")
+          );
+        } else {
+          showToastOps("Não foi possível copiar.");
+        }
       }
 
       function salvarLoginVinculo(event) {
@@ -3101,6 +3208,7 @@
           email: form.email.value,
           documento: form.documento.value,
           whatsapp: form.whatsapp.value,
+          perfil: "cliente",
           createdAt: nowIso(),
         });
         const target = store.requests.find((r) => r.requestId === req.requestId);
@@ -3133,9 +3241,14 @@
           },
         });
         saveVinculoStore(store);
-        showToastOps("Login criado. Seller convertido.");
-        navigate("vinculo");
-        openVinculoDrawer(req.requestId);
+        showToastOps("Login criado. Seller convertido. Compartilhe o acesso.");
+        abrirModalShareVinculo({
+          requestId: req.requestId,
+          email: form.email.value,
+          username: form.username.value,
+          senha: form.senha.value,
+          whatsapp: form.whatsapp.value,
+        });
       }
 
       // --- Inicialização ---
