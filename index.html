@@ -2622,14 +2622,13 @@
         <option value="RECUSADA">Recusada</option>
       </select>
       <button type="button" onclick="copiarLinkCadastroTransportadora()" class="w-full sm:w-auto px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded text-sm font-semibold inline-flex items-center justify-center gap-2">
-        <i class="fa-solid fa-link"></i> Gerar link da transportadora
+        <i class="fa-solid fa-link"></i> Gerar link de cadastro
       </button>
     </div>
     <div class="bg-white rounded-b shadow-seller overflow-hidden border border-t-0 border-gray-200">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead><tr class="table-header-dark text-xs tracking-wider">
-            <th class="p-3 font-medium">ID</th>
             <th class="p-3 font-medium">SELLER</th>
             <th class="p-3 font-medium">ORIGEM</th>
             <th class="p-3 font-medium">CPF/CNPJ</th>
@@ -2668,7 +2667,7 @@
         if (!list.length) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="8" class="p-8 text-center text-gray-500">
+              <td colspan="7" class="p-8 text-center text-gray-500">
                 <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-3 block"></i>
                 <p class="font-medium text-gray-700">Nenhuma solicitação de vínculo</p>
                 <p class="text-xs mt-1 max-w-md mx-auto">As novas solicitações do Seller aparecerão automaticamente aqui.</p>
@@ -2682,7 +2681,6 @@
             const menuId = `menu-${req.requestId}`;
             return `
               <tr class="border-b border-gray-100 table-row-hover transition-colors relative">
-                <td class="p-3"><div class="font-medium text-gray-800">${req.requestId}</div><div class="text-[10px] text-gray-400">${req.sellerId}</div></td>
                 <td class="p-3 text-gray-800">${snap.nome || "—"}</td>
                 <td class="p-3"><span class="inline-flex px-2 py-1 rounded border text-[11px] font-semibold ${req.origem === "TRANSPORTADORA" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-green-50 border-green-200 text-green-700"}">${vinculoOrigemLabel(req.origem)}</span></td>
                 <td class="p-3 text-gray-600">${snap.documento || snap.cnpj || "—"}</td>
