@@ -462,7 +462,7 @@
             id="nav-sac-reputacao"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
             data-title="Controle de reputação"
-            data-desc="Acompanhe pedidos em atraso com reputação afetada no Mercado Livre e acione a Fique no Verde Já com carteira pré-paga."
+            data-desc="Solicite tratativas para pedidos com reputação afetada e acompanhe o andamento pela Fique no Verde Já."
             data-sub="A gestão integrada permite o encaminhamento direto para parceiros estratégicos."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
@@ -715,7 +715,7 @@
             id="nav-sac-reputacao-mobile"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
             data-title="Controle de reputação"
-            data-desc="Acompanhe pedidos em atraso com reputação afetada no Mercado Livre e acione a Fique no Verde Já com carteira pré-paga."
+            data-desc="Solicite tratativas para pedidos com reputação afetada e acompanhe o andamento pela Fique no Verde Já."
             data-sub="A gestão integrada permite o encaminhamento direto para parceiros estratégicos."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
@@ -805,77 +805,6 @@
       </div>
     </main>
 
-    <!-- ===== MODAL: CARTEIRA PRÉ-PAGA ASAAS ===== -->
-    <div
-      id="wallet-modal"
-      class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-      onclick="if(event.target===this) fecharModalCarteira()"
-    >
-      <div
-        class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto overflow-hidden border border-gray-100 max-h-[90vh] flex flex-col"
-      >
-        <div
-          class="px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0"
-        >
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fa-solid fa-wallet text-tracken-green mr-2"></i>
-            Pacotes de remoções
-          </h3>
-          <button
-            onclick="fecharModalCarteira()"
-            class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div id="wallet-modal-body" class="p-6 overflow-y-auto"></div>
-      </div>
-    </div>
-
-    <!-- ===== MODAL: SALDO INSUFICIENTE ===== -->
-    <div
-      id="saldo-insuficiente-modal"
-      class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      onclick="if(event.target===this) fecharModalSaldoInsuficiente()"
-    >
-      <div
-        class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden border border-gray-100"
-      >
-        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i>
-            Saldo insuficiente
-          </h3>
-          <button
-            onclick="fecharModalSaldoInsuficiente()"
-            class="text-gray-400 hover:text-gray-600"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div class="p-6">
-          <p class="text-gray-600 text-sm mb-2">
-            Compre um pacote de remoções para acionar a Fique no Verde Já.
-          </p>
-          <p id="saldo-insuficiente-detalhe" class="text-xs text-gray-500 mb-5"></p>
-          <div class="flex justify-end space-x-3">
-            <button
-              onclick="fecharModalSaldoInsuficiente()"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              onclick="fecharModalSaldoInsuficiente(); abrirModalCarteira('recarga');"
-              class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded-lg font-medium"
-            >
-              Comprar pacote
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Partner Action Confirmation Modal -->
     <div
       id="action-modal"
@@ -921,10 +850,8 @@
           >
             <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5 mr-2"></i>
             <p class="text-xs text-emerald-200">
-              O status será alterado para "Encaminhado p/ FNVJ" e será
-              debitada agora
-              <span id="modal-debit-amount" class="font-semibold">0 remoção(ões)</span>
-              da carteira de pacotes.
+              A solicitação ficará como "Aguardando pagamento" e você será
+              redirecionado ao ambiente de demonstração da FNVJ.
             </p>
           </div>
           <div
@@ -943,7 +870,7 @@
               onclick="confirmPartnerAction()"
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-sm font-medium transition flex items-center"
             >
-              <i class="fa-solid fa-paper-plane mr-2"></i> Confirmar Acionamento
+              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Continuar para pagamento
             </button>
           </div>
         </div>
@@ -1117,111 +1044,232 @@
       }
 
       // ============================================================
-      // CARTEIRA PRÉ-PAGA ASAAS
+      // CHECKOUT FNVJ — DEMONSTRAÇÃO
       // ============================================================
-      const WALLET_KEY = "ops_asaas_wallet";
       const INTRO_KEY = "ops_reputacao_intro";
       const STATUS_AFETADA = "Reputação afetada";
+      const STATUS_AGUARDANDO = "Aguardando pagamento";
       const PARTY_COL = "Cliente";
-      const PAYER_LABEL = "transportadora";
       const ACCENT_BTN = "bg-tracken-green hover:bg-green-600";
       const ACCENT_FOCUS = "focus:border-tracken-green";
       const ACCENT_PAGE = "border-tracken-green bg-green-50 text-tracken-dark";
+      const CHECKOUT_SOURCE = "operacional";
+      const CHECKOUT_BATCH_KEY = "ops_reputation_checkout_batches";
+      const CHECKOUT_PROD_URL = "https://lp-tracken-fnvj.vercel.app/checkout";
 
-      const PRICE_FLEX = 9;
-      const PRICE_ESCALA = 7;
-      const FRANQUIA_MIN = 50;
-      const ESCALA_PACKS = [50, 100, 500, 1000];
-      const PACK_ACTIVE = "border-tracken-green bg-green-50";
+      function isLocalDemoHost() {
+        return location.hostname === "127.0.0.1" || location.hostname === "localhost";
+      }
 
-      let walletStep = "home";
-      let selectedTier = "escala";
-      let flexQty = 10;
-      let escalaQty = 50;
-      let selectedMethod = "pix";
-      let lastReceipt = null;
-      let splitOpen = false;
+      function getFnvjCheckoutUrl() {
+        return isLocalDemoHost()
+          ? "http://127.0.0.1:4173/checkout"
+          : CHECKOUT_PROD_URL;
+      }
 
-      function round2(n) {
-        return Math.round(n * 100) / 100;
+      function randomHex(bytes = 16) {
+        const values = new Uint8Array(bytes);
+        crypto.getRandomValues(values);
+        return Array.from(values, (value) => value.toString(16).padStart(2, "0")).join("");
       }
-      function formatBRL(n) {
-        return round2(n).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-      }
-      function emptyWallet() {
-        return { credits: 0, history: [] };
-      }
-      function loadWallet() {
+
+      function loadCheckoutBatches() {
         try {
-          const raw = localStorage.getItem(WALLET_KEY);
-          if (!raw) return emptyWallet();
-          const parsed = JSON.parse(raw);
-          return {
-            credits: Number(parsed.credits) || 0,
-            history: parsed.history || [],
-          };
-        } catch (e) {
-          return emptyWallet();
+          const parsed = JSON.parse(localStorage.getItem(CHECKOUT_BATCH_KEY) || "{}");
+          if (parsed.version !== 1 || !parsed.batches || typeof parsed.batches !== "object") {
+            return { version: 1, batches: {} };
+          }
+          return parsed;
+        } catch (error) {
+          return { version: 1, batches: {} };
         }
       }
-      function saveWallet(wallet) {
-        localStorage.setItem(WALLET_KEY, JSON.stringify(wallet));
+
+      function saveCheckoutBatches(store) {
+        localStorage.setItem(CHECKOUT_BATCH_KEY, JSON.stringify({
+          version: 1,
+          batches: store.batches || {},
+        }));
       }
-      function creditosDisponiveis() {
-        return loadWallet().credits;
-      }
-      function clamp(n, min, max) {
-        return Math.min(max, Math.max(min, n));
-      }
-      function currentPack() {
-        if (selectedTier === "flex") {
-          const qty = clamp(Number(flexQty) || 1, 1, FRANQUIA_MIN - 1);
-          return {
-            tier: "flex",
-            name: "Pacote Flexível",
-            qty,
-            unit: PRICE_FLEX,
-            amount: round2(qty * PRICE_FLEX),
-          };
-        }
-        const qty = ESCALA_PACKS.includes(escalaQty) ? escalaQty : FRANQUIA_MIN;
-        return {
-          tier: "escala",
-          name: "Pacote Escala",
-          qty,
-          unit: PRICE_ESCALA,
-          amount: round2(qty * PRICE_ESCALA),
+
+      function createCheckoutBatch(orderIds) {
+        const store = loadCheckoutBatches();
+        const id = crypto.randomUUID ? crypto.randomUUID() : randomHex(16);
+        const batch = {
+          id,
+          state: randomHex(24),
+          source: CHECKOUT_SOURCE,
+          quantity: orderIds.length,
+          orderIds: [...orderIds],
+          status: "pending",
+          result: null,
+          createdAt: new Date().toISOString(),
+          processedAt: null,
         };
+        store.batches[id] = batch;
+        saveCheckoutBatches(store);
+        return batch;
       }
-      function setFlexQty(delta) {
-        flexQty = clamp((Number(flexQty) || 1) + delta, 1, FRANQUIA_MIN - 1);
-        selectedTier = "flex";
-        renderWalletModal();
+
+      function isValidCheckoutBatch(batch) {
+        return Boolean(
+          batch &&
+          typeof batch.id === "string" &&
+          typeof batch.state === "string" &&
+          batch.source === CHECKOUT_SOURCE &&
+          Number.isInteger(batch.quantity) &&
+          batch.quantity > 0 &&
+          Array.isArray(batch.orderIds) &&
+          batch.orderIds.length === batch.quantity
+        );
       }
-      function setEscalaQty(qty) {
-        escalaQty = qty;
-        selectedTier = "escala";
-        renderWalletModal();
+
+      function redirectToCheckout(batch) {
+        if (!isValidCheckoutBatch(batch)) {
+          showToastOps("Não foi possível abrir o checkout desta solicitação.");
+          return;
+        }
+        const checkoutUrl = new URL(getFnvjCheckoutUrl());
+        checkoutUrl.searchParams.set("version", "1");
+        checkoutUrl.searchParams.set("source", CHECKOUT_SOURCE);
+        checkoutUrl.searchParams.set("quantity", String(batch.quantity));
+        checkoutUrl.searchParams.set("batchId", batch.id);
+        checkoutUrl.searchParams.set("state", batch.state);
+        location.assign(checkoutUrl.href);
       }
-      function chooseTier(tier) {
-        selectedTier = tier;
-        renderWalletModal();
+
+      function retomarPagamento(batchId) {
+        const store = loadCheckoutBatches();
+        const batch = store.batches[batchId];
+        if (!isValidCheckoutBatch(batch)) {
+          showToastOps("Solicitação pendente não encontrada. Restaure a demonstração e tente novamente.");
+          return;
+        }
+        const pendingIds = batch.orderIds.filter((id) =>
+          orders.some((order) =>
+            order.id === id &&
+            order.checkoutBatchId === batch.id &&
+            order.status === STATUS_AGUARDANDO
+          )
+        );
+        if (!pendingIds.length) {
+          showToastOps("Esta solicitação não possui itens aguardando pagamento.");
+          return;
+        }
+        batch.quantity = pendingIds.length;
+        batch.orderIds = pendingIds;
+        batch.status = "pending";
+        batch.result = null;
+        batch.processedAt = null;
+        saveCheckoutBatches(store);
+        redirectToCheckout(batch);
+      }
+
+      function cleanCheckoutReturnParams() {
+        const url = new URL(location.href);
+        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source"].forEach(
+          (key) => url.searchParams.delete(key)
+        );
+        history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+      }
+
+      function consumeCheckoutReturn() {
+        const params = new URLSearchParams(location.search);
+        const result = params.get("fnvj_result");
+        if (!result) return "";
+
+        const allowedResults = new Set(["paid", "cancelled", "failed"]);
+        const batchId = params.get("fnvj_batch") || "";
+        const state = params.get("fnvj_state") || "";
+        const source = params.get("fnvj_source") || "";
+        const version = params.get("fnvj_v") || "";
+        const store = loadCheckoutBatches();
+        const batch = store.batches[batchId];
+
+        if (
+          version !== "1" ||
+          source !== CHECKOUT_SOURCE ||
+          !allowedResults.has(result) ||
+          !isValidCheckoutBatch(batch) ||
+          batch.state !== state
+        ) {
+          cleanCheckoutReturnParams();
+          return "Retorno da FNVJ ignorado: solicitação de demonstração inválida.";
+        }
+
+        if (batch.result === result && batch.processedAt) {
+          cleanCheckoutReturnParams();
+          return result === "paid"
+            ? "Esta confirmação de demonstração já havia sido processada."
+            : "Este retorno de demonstração já havia sido registrado.";
+        }
+
+        const now = new Date();
+        if (result === "paid") {
+          const orderIds = new Set(batch.orderIds);
+          orders = orders.map((order) => {
+            if (
+              !orderIds.has(order.id) ||
+              order.checkoutBatchId !== batch.id ||
+              order.status !== STATUS_AGUARDANDO
+            ) {
+              return order;
+            }
+            const eventId = "fnvj-paid-" + batch.id;
+            const historico = order.historico.some((event) => event.id === eventId)
+              ? order.historico
+              : [
+                  ...order.historico,
+                  {
+                    id: eventId,
+                    date: formatDateFull(now),
+                    action: "Pagamento de demonstração confirmado pela FNVJ; acionamento liberado",
+                    type: "partner_init",
+                  },
+                ];
+            return {
+              ...order,
+              status: "Encaminhado p/ FNVJ",
+              historico,
+            };
+          });
+          saveData();
+          batch.status = "paid";
+          batch.result = "paid";
+          batch.processedAt = now.toISOString();
+          saveCheckoutBatches(store);
+          cleanCheckoutReturnParams();
+          return "Pagamento de demonstração confirmado. Tratativas encaminhadas à FNVJ.";
+        }
+
+        batch.status = result;
+        batch.result = result;
+        batch.processedAt = now.toISOString();
+        saveCheckoutBatches(store);
+        cleanCheckoutReturnParams();
+        return result === "cancelled"
+          ? "Pagamento de demonstração cancelado. A solicitação continua pendente."
+          : "A simulação de pagamento falhou. Você pode tentar novamente.";
       }
 
       function isIntroSeen() {
         return localStorage.getItem(INTRO_KEY) === "true";
       }
+
       function markIntroSeen() {
         localStorage.setItem(INTRO_KEY, "true");
       }
+
       function reopenIntro() {
         localStorage.removeItem(INTRO_KEY);
-        refreshReputacaoView();
+        renderReputacao(document.getElementById("view-container"));
       }
+
       function acessarReputacao() {
         markIntroSeen();
-        refreshReputacaoView();
+        renderReputacao(document.getElementById("view-container"));
       }
+
       function parseDateBR(str) {
         if (!str) return null;
         const parts = String(str).split("/");
@@ -1232,258 +1280,16 @@
         if (!d || !m || !y) return null;
         return new Date(y, m - 1, d);
       }
-      function dateToInputValue(date) {
-        const y = date.getFullYear();
-        const mo = String(date.getMonth() + 1).padStart(2, "0");
-        const d = String(date.getDate()).padStart(2, "0");
-        return y + "-" + mo + "-" + d;
-      }
+
       function inputToDate(val) {
         if (!val) return null;
         const parts = val.split("-").map(Number);
         return new Date(parts[0], parts[1] - 1, parts[2]);
       }
 
-      function abrirModalCarteira(step) {
-        walletStep = step || "home";
-        splitOpen = false;
-        document.getElementById("wallet-modal").classList.add("active");
-        renderWalletModal();
-      }
-      function fecharModalCarteira() {
-        document.getElementById("wallet-modal").classList.remove("active");
-        walletStep = "home";
-      }
-      function fecharModalSaldoInsuficiente() {
-        document.getElementById("saldo-insuficiente-modal").classList.remove("active");
-      }
-      function abrirModalSaldoInsuficiente(neededCredits) {
-        const wallet = loadWallet();
-        const el = document.getElementById("saldo-insuficiente-detalhe");
-        if (el) {
-          el.textContent =
-            "Necessário " + neededCredits + " remoção(ões) · disponível " + wallet.credits + ".";
-        }
-        document.getElementById("saldo-insuficiente-modal").classList.add("active");
-      }
-
-      function renderWalletModal() {
-        const body = document.getElementById("wallet-modal-body");
-        if (!body) return;
-        const wallet = loadWallet();
-        if (walletStep === "pix") {
-          body.innerHTML = walletPixHtml();
-          return;
-        }
-        if (walletStep === "card") {
-          body.innerHTML = walletCardHtml();
-          return;
-        }
-        if (walletStep === "receipt") {
-          body.innerHTML = walletReceiptHtml();
-          return;
-        }
-        body.innerHTML = walletHomeHtml(wallet);
-      }
-
-      function walletHomeHtml(wallet) {
-        const pack = currentPack();
-        const flexOn = selectedTier === "flex";
-        const escalaOn = selectedTier === "escala";
-        const pixActive = selectedMethod === "pix";
-        const cardActive = selectedMethod === "card";
-        const escalaBtns = ESCALA_PACKS.map((q) => {
-          const on = escalaOn && escalaQty === q;
-          return `<button type="button" onclick="setEscalaQty(${q})" class="px-3 py-2 rounded-lg border text-xs font-semibold ${on ? PACK_ACTIVE + " text-gray-900" : "border-gray-200 text-gray-600"}">${q.toLocaleString("pt-BR")}</button>`;
-        }).join("");
-        const hist = (wallet.history || []).slice(0, 5).map((h) => {
-          const when = h.at ? new Date(h.at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
-          const label = h.type === "credit" ? (h.packName || "Pacote") : "Uso de remoção";
-          const sign = h.type === "credit" ? "+" : "−";
-          const qty = h.credits || 0;
-          const color = h.type === "credit" ? "text-emerald-600" : "text-gray-700";
-          return `<div class="flex justify-between text-xs py-1.5 border-b border-gray-50 last:border-0">
-            <span class="text-gray-500">${label}<span class="text-gray-400 ml-1">${when}</span></span>
-            <span class="${color} font-medium">${sign}${qty}${h.type === "credit" ? " · " + formatBRL(h.amount) : ""}</span>
-          </div>`;
-        }).join("") || `<p class="text-xs text-gray-400">Nenhum movimento ainda.</p>`;
-        return `
-          <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-4 flex items-center justify-between">
-            <div>
-              <div class="text-[11px] uppercase tracking-wider text-gray-400">Remoções</div>
-              <div class="text-2xl font-bold text-gray-900">${wallet.credits}</div>
-              <div class="text-xs text-gray-500 mt-0.5">disponíveis para acionar a FNVJ</div>
-            </div>
-            <div class="text-[10px] text-gray-400 text-right leading-relaxed">Pacotes pré-pagos<br/>fechamento mensal</div>
-          </div>
-          <p class="text-xs text-gray-500 mb-3">Não há recarga de valor livre. A compra é por pacote de remoções, no mesmo modelo da Fique no Verde Já.</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <div role="button" tabindex="0" onclick="chooseTier('flex')" class="text-left border rounded-xl p-3 cursor-pointer ${flexOn ? PACK_ACTIVE : "border-gray-200"}">
-              <div class="text-[10px] uppercase tracking-wider text-gray-400">Abaixo da franquia</div>
-              <div class="font-bold text-gray-900 text-sm mt-0.5">Pacote Flexível</div>
-              <div class="text-xs text-gray-500 mt-1">1 a 49 remoções · ${formatBRL(PRICE_FLEX)} / un.</div>
-              <div class="flex items-center gap-2 mt-3" onclick="event.stopPropagation()">
-                <button type="button" onclick="setFlexQty(-1)" class="w-8 h-8 rounded-lg border border-gray-200 text-gray-700">−</button>
-                <span class="w-10 text-center font-semibold">${clamp(flexQty, 1, 49)}</span>
-                <button type="button" onclick="setFlexQty(1)" class="w-8 h-8 rounded-lg border border-gray-200 text-gray-700">+</button>
-              </div>
-            </div>
-            <div role="button" tabindex="0" onclick="chooseTier('escala')" class="text-left border rounded-xl p-3 cursor-pointer ${escalaOn ? PACK_ACTIVE : "border-gray-200"}">
-              <div class="text-[10px] uppercase tracking-wider text-gray-400">Franquia mensal</div>
-              <div class="font-bold text-gray-900 text-sm mt-0.5">Pacote Escala</div>
-              <div class="text-xs text-gray-500 mt-1">mín. ${FRANQUIA_MIN} remoções · ${formatBRL(PRICE_ESCALA)} / un.</div>
-              <div class="flex flex-wrap gap-1.5 mt-3" onclick="event.stopPropagation()">${escalaBtns}</div>
-            </div>
-          </div>
-          <div class="bg-white border border-gray-100 rounded-xl p-3 mb-4 text-sm flex justify-between">
-            <span class="text-gray-500">${pack.name} · ${pack.qty} remoção(ões)</span>
-            <span class="font-bold text-gray-900">${formatBRL(pack.amount)}</span>
-          </div>
-          <div class="flex gap-2 mb-4">
-            <button type="button" onclick="selectedMethod='pix'; renderWalletModal();" class="flex-1 border rounded-xl px-3 py-2.5 text-sm font-medium ${pixActive ? PACK_ACTIVE + " text-gray-900" : "border-gray-200 text-gray-600"}">
-              <i class="fa-brands fa-pix mr-1"></i> Pix
-            </button>
-            <button type="button" onclick="selectedMethod='card'; renderWalletModal();" class="flex-1 border rounded-xl px-3 py-2.5 text-sm font-medium ${cardActive ? PACK_ACTIVE + " text-gray-900" : "border-gray-200 text-gray-600"}">
-              <i class="fa-regular fa-credit-card mr-1"></i> Cartão
-            </button>
-          </div>
-          <button type="button" onclick="iniciarPagamentoCarteira()" class="w-full ${ACCENT_BTN} text-white font-semibold py-2.5 rounded-xl text-sm">
-            Comprar ${pack.qty} remoções · ${formatBRL(pack.amount)}
-          </button>
-          <div class="mt-5">
-            <div class="text-[11px] uppercase tracking-wider text-gray-400 mb-1">Movimentações</div>
-            ${hist}
-          </div>
-        `;
-      }
-
-      function walletPixHtml() {
-        const pack = currentPack();
-        return `
-          <p class="text-sm text-gray-600 mb-4">Pix de <strong>${formatBRL(pack.amount)}</strong> para o ${pack.name} (${pack.qty} remoções). Nesta demo, confirme para simular o retorno do Asaas.</p>
-          <div class="flex justify-center mb-4"><div class="qr-fake rounded"></div></div>
-          <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 mb-5">
-            <div class="text-[10px] uppercase text-gray-400 mb-1">Copia e cola</div>
-            <div class="text-[11px] font-mono text-gray-600 break-all">00020126580014br.gov.bcb.pix0136tracken-demo-asaas-fnvj520400005303986540${pack.amount.toFixed(2)}5802BR5925TRACKEN PAGAMENTOS6009SAO PAULO</div>
-          </div>
-          <div class="flex gap-2">
-            <button type="button" onclick="walletStep='home'; renderWalletModal();" class="px-4 py-2.5 border border-gray-300 rounded-xl text-gray-700 text-sm">Voltar</button>
-            <button type="button" onclick="confirmarRecargaCarteira('Pix')" class="flex-1 ${ACCENT_BTN} text-white font-semibold py-2.5 rounded-xl text-sm">Simular pagamento confirmado</button>
-          </div>
-        `;
-      }
-
-      function walletCardHtml() {
-        const pack = currentPack();
-        return `
-          <p class="text-sm text-gray-600 mb-4">Cartão de <strong>${formatBRL(pack.amount)}</strong> para o ${pack.name} (${pack.qty} remoções) via Asaas.</p>
-          <div class="space-y-3 mb-5">
-            <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Número do cartão" value="5162 •••• •••• 4411" />
-            <div class="grid grid-cols-2 gap-2">
-              <input class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Validade" value="12/28" />
-              <input class="border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="CVV" value="•••" />
-            </div>
-            <input class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="Nome impresso" value="ARTUR SILVA" />
-          </div>
-          <div class="flex gap-2">
-            <button type="button" onclick="walletStep='home'; renderWalletModal();" class="px-4 py-2.5 border border-gray-300 rounded-xl text-gray-700 text-sm">Voltar</button>
-            <button type="button" onclick="confirmarRecargaCarteira('Cartão')" class="flex-1 ${ACCENT_BTN} text-white font-semibold py-2.5 rounded-xl text-sm">Simular pagamento confirmado</button>
-          </div>
-        `;
-      }
-
-      function walletReceiptHtml() {
-        if (!lastReceipt) return "";
-        const splitBlock = splitOpen ? `
-          <div class="mt-3 space-y-2 text-xs">
-            <div class="flex justify-between"><span class="text-gray-500">Destino Fique no Verde Já</span><span class="font-medium text-gray-800">${formatBRL(lastReceipt.fnvj)}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Destino plataforma</span><span class="font-medium text-gray-800">${formatBRL(lastReceipt.tracken)}</span></div>
-            <p class="text-[11px] text-gray-400 leading-relaxed">Liquidação automática no momento do pagamento. Cada parte recebe na respectiva conta Asaas, sem repasse manual.</p>
-          </div>
-        ` : "";
-        return `
-          <div class="text-center mb-4">
-            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-circle-check text-xl"></i></div>
-            <h4 class="font-bold text-gray-900">Pacote confirmado</h4>
-            <p class="text-xs text-gray-500 mt-1">${lastReceipt.qty} remoções creditadas</p>
-          </div>
-          <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-4 text-sm space-y-2">
-            <div class="flex justify-between"><span class="text-gray-500">Pacote</span><span>${lastReceipt.packName}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Remoções</span><span class="font-semibold">${lastReceipt.qty}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Valor</span><span class="font-semibold">${formatBRL(lastReceipt.amount)}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Meio</span><span>${lastReceipt.method}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Saldo de remoções</span><span class="font-semibold text-emerald-700">${lastReceipt.credits}</span></div>
-          </div>
-          <button type="button" onclick="splitOpen=!splitOpen; renderWalletModal();" class="text-xs text-gray-500 hover:text-gray-800 mb-4">
-            ${splitOpen ? "Ocultar liquidação Asaas" : "Ver liquidação Asaas"}
-            <i class="fa-solid fa-chevron-${splitOpen ? "up" : "down"} ml-1"></i>
-          </button>
-          ${splitBlock}
-          <button type="button" onclick="fecharModalCarteira(); refreshReputacaoView();" class="w-full ${ACCENT_BTN} text-white font-semibold py-2.5 rounded-xl text-sm mt-2">Concluir</button>
-        `;
-      }
-
-      function iniciarPagamentoCarteira() {
-        walletStep = selectedMethod === "card" ? "card" : "pix";
-        renderWalletModal();
-      }
-
-      function confirmarRecargaCarteira(method) {
-        const pack = currentPack();
-        const wallet = loadWallet();
-        wallet.credits += pack.qty;
-        const fnvj = round2(pack.amount * 0.9);
-        const tracken = round2(pack.amount - fnvj);
-        wallet.history.unshift({
-          type: "credit",
-          amount: pack.amount,
-          credits: pack.qty,
-          packName: pack.name,
-          at: new Date().toISOString(),
-          method,
-          split: { fnvj, tracken },
-        });
-        saveWallet(wallet);
-        lastReceipt = {
-          amount: pack.amount,
-          qty: pack.qty,
-          packName: pack.name,
-          method,
-          credits: wallet.credits,
-          fnvj,
-          tracken,
-        };
-        walletStep = "receipt";
-        splitOpen = false;
-        renderWalletModal();
-        showToastOps("Pacote confirmado. Remoções creditadas.");
-      }
-
-      function refreshReputacaoView() {
-        if (currentView === "sac-reputacao") {
-          renderReputacao(document.getElementById("view-container"));
-        }
-      }
-
-      // --- Mock Data & Constants ---
-      const MARKETPLACES = [
-        {
-          name: "Mercado Livre",
-          logo: "Meli",
-          color: "bg-yellow-300 text-blue-900",
-        },
-        { name: "Shopee", logo: "Shopee", color: "bg-orange-500 text-white" },
-        { name: "Magalu", logo: "Magalu", color: "bg-blue-600 text-white" },
-        { name: "Amazon", logo: "Amazon", color: "bg-gray-800 text-white" },
-        { name: "Bling", logo: "Bling", color: "bg-green-600 text-white" },
-        { name: "VTEX", logo: "VTEX", color: "bg-pink-600 text-white" },
-        { name: "Tiny", logo: "Tiny", color: "bg-blue-500 text-white" },
-        { name: "Shopify", logo: "Shopify", color: "bg-emerald-600 text-white" },
-        { name: "Outros", logo: "Outros", color: "bg-gray-500 text-white" },
-      ];
-
       const STATUS_FLOW = [
-        "Reputação afetada",
+        STATUS_AFETADA,
+        STATUS_AGUARDANDO,
         "Encaminhado p/ FNVJ",
         "Em atendimento",
         "Cliente contatado",
@@ -1804,8 +1610,11 @@
             }
             orders.forEach((o) => {
               if (o.status === "Atraso identificado") o.status = STATUS_AFETADA;
-              if (o.cobrancaRegistrada === undefined) o.cobrancaRegistrada = false;
+              if (o.checkoutBatchId === undefined) o.checkoutBatchId = null;
+              delete o.cobrancaRegistrada;
+              delete o.debitado;
             });
+            localStorage.removeItem("ops_asaas_wallet");
             saveData();
           } catch (e) {
             generateMockData();
@@ -1870,8 +1679,7 @@
                 type: "system",
               },
             ],
-            cobrancaRegistrada: false,
-            debitado: false,
+            checkoutBatchId: null,
           });
         }
         saveData();
@@ -1885,6 +1693,7 @@
         localStorage.removeItem("tracken_fnvj_demo_data");
         localStorage.removeItem("tracken_pagamento_configurado");
         localStorage.removeItem("ops_asaas_wallet");
+        localStorage.removeItem(CHECKOUT_BATCH_KEY);
         localStorage.removeItem("ops_reputacao_intro");
         resetVinculoStoreKeepSeller();
         selectedOrderIds.clear();
@@ -1892,8 +1701,6 @@
         vinculoFormRequestId = null;
         closeDrawer();
         closeModal();
-        fecharModalCarteira();
-        fecharModalSaldoInsuficiente();
         fecharModalRecusarVinculo();
         initData();
         if (currentView === "sac-reputacao") {
@@ -1929,6 +1736,8 @@
         switch (status) {
           case STATUS_AFETADA:
             return "bg-red-100 text-red-700 border-red-200";
+          case STATUS_AGUARDANDO:
+            return "bg-amber-100 text-amber-800 border-amber-200";
           case "Encaminhado p/ FNVJ":
             return "bg-blue-100 text-blue-700 border-blue-200";
           case "Resolvido":
@@ -2080,8 +1889,8 @@
             <div class="space-y-4 text-sm text-gray-600 leading-relaxed">
               <p>A tela lista pedidos do <strong>Mercado Livre</strong> em <strong>atraso</strong> cuja reputação foi afetada — identificados pela API do ML. Nem todo atraso gera perda de reputação: só aparecem aqui os que o marketplace sinalizou. Reclamações e denúncias ficam para uma etapa posterior.</p>
               <p>Você seleciona as vendas e aciona a <strong>Fique no Verde Já</strong>, que assume o contato com o cliente e devolve o andamento para o TRACKen.</p>
-              <p>O pagamento é <strong>pré-pago por pacotes de remoções</strong>: Flexível (1 a 49 un. a R$ 9,00) ou Escala (mínimo 50 un. a R$ 7,00), com fechamento mensal. Cada acionamento consome 1 remoção.</p>
-              <p>O valor pode ser pago pela <strong>transportadora</strong> neste painel ou pelo <strong>seller</strong> no TRACKen Seller — cada um usa a própria carteira.</p>
+              <p>Você inicia a solicitação no TRACKen e segue para o <strong>checkout de demonstração da FNVJ</strong>, onde pode simular o pagamento por Pix ou cartão.</p>
+              <p>Depois da confirmação simulada, os acionamentos são liberados no TRACKen. Se cancelar ou abandonar o checkout, a solicitação permanece pendente para tentar novamente.</p>
             </div>
             <button type="button" onclick="acessarReputacao()" class="mt-6 w-full sm:w-auto ${ACCENT_BTN} text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
               Acessar controle de reputação
@@ -2093,8 +1902,8 @@
       function renderReputacao(container) {
         if (!container) return;
 
-        const wallet = loadWallet();
         const pendentes = orders.filter((o) => o.status === STATUS_AFETADA).length;
+        const aguardandoPagamento = orders.filter((o) => o.status === STATUS_AGUARDANDO).length;
         const encaminhados = orders.filter((o) => o.status === "Encaminhado p/ FNVJ").length;
         const emAtendimento = orders.filter((o) =>
           ["Em atendimento", "Cliente contatado", "Tratativa concluída"].includes(o.status)
@@ -2119,15 +1928,9 @@
                 </p>
                 <button type="button" onclick="reopenIntro()" class="text-[11px] text-gray-400 hover:text-gray-600 mt-1">Como funciona</button>
               </div>
-              <div class="flex items-center space-x-3 bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-seller">
-                <div>
-                  <div class="text-[10px] uppercase tracking-wider text-gray-400">Remoções</div>
-                  <div class="text-sm font-bold text-gray-900">${wallet.credits || 0}</div>
-                  <div class="text-[11px] text-gray-500">pacote pré-pago</div>
-                </div>
-                <button onclick="abrirModalCarteira('home')" class="text-xs ${ACCENT_BTN} text-white px-2.5 py-1.5 rounded-lg transition-colors">
-                  Comprar pacote
-                </button>
+              <div class="flex items-center gap-2 bg-violet-50 px-3 py-2 rounded-lg border border-violet-200 text-violet-800 shadow-seller">
+                <i class="fa-solid fa-flask text-violet-500"></i>
+                <span class="text-xs font-semibold">Fluxo demonstrativo</span>
               </div>
             </div>
           </div>
@@ -2139,10 +1942,14 @@
         }
 
         container.innerHTML = header + `
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
               <div class="text-xs text-gray-500 mb-1">Reputação afetada</div>
               <div class="text-xl font-bold text-gray-800">${pendentes}</div>
+            </div>
+            <div class="bg-white rounded p-4 border border-amber-200 shadow-seller bg-amber-50">
+              <div class="text-xs text-amber-700 mb-1">Aguardando pagamento</div>
+              <div class="text-xl font-bold text-amber-800">${aguardandoPagamento}</div>
             </div>
             <div class="bg-white rounded p-4 border border-blue-200 shadow-seller bg-blue-50">
               <div class="text-xs text-blue-600 mb-1">Encaminhados</div>
@@ -2163,6 +1970,7 @@
               <select id="filter-status-reputacao" onchange="renderTableRowsReputacao()" class="border border-gray-300 text-gray-600 rounded px-3 py-1.5 text-sm focus:outline-none ${ACCENT_FOCUS} w-full sm:w-auto">
                 <option value="all">Todos os Status</option>
                 <option value="${STATUS_AFETADA}">${STATUS_AFETADA}</option>
+                <option value="${STATUS_AGUARDANDO}">${STATUS_AGUARDANDO}</option>
                 <option value="Encaminhado p/ FNVJ">Encaminhado p/ FNVJ</option>
                 <option value="Em atendimento">Em atendimento</option>
                 <option value="Cliente contatado">Cliente contatado</option>
@@ -2194,8 +2002,6 @@
                   <th class="p-3 font-medium">${PARTY_COL.toUpperCase()}</th>
                   <th class="p-3 font-medium">PREV. ENTREGA</th>
                   <th class="p-3 font-medium">COLETA/RECEB.</th>
-                  <th class="p-3 font-medium text-center">ATRASO</th>
-                  <th class="p-3 font-medium">TAG</th>
                   <th class="p-3 font-medium">STATUS</th>
                   <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
                 </tr></thead>
@@ -2252,13 +2058,12 @@
             <td class="p-3"><div class="text-gray-800 truncate w-32 md:w-auto" title="${order.cliente}">${order.cliente}</div></td>
             <td class="p-3 text-gray-600">${order.dataPrevista}</td>
             <td class="p-3 text-gray-600">${order.dataColeta || "—"}</td>
-            <td class="p-3 text-center"><span class="font-bold text-red-500">${order.diasAtraso} dias</span></td>
-            <td class="p-3"><span class="px-2 py-1 text-[10px] rounded-md border bg-amber-50 text-amber-800 border-amber-200 font-semibold inline-flex items-center whitespace-nowrap"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Reputação afetada</span></td>
             <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-md border ${getStatusColor(order.status)} font-medium inline-flex items-center">${order.status}</span></td>
             <td class="p-3 text-center relative">
               <button onclick="toggleActionMenu('${order.id}', event)" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none"><i class="fa-solid fa-ellipsis-vertical"></i></button>
               <div id="menu-${order.id}" class="action-menu absolute right-8 top-8 w-36 bg-white border border-gray-200 shadow-lg rounded-md z-10 text-left overflow-hidden">
                 <button onclick="openDrawer('${order.id}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-timeline w-5 text-gray-400"></i> Ver histórico</button>
+                ${order.status === STATUS_AGUARDANDO && order.checkoutBatchId ? `<button onclick="retomarPagamento('${order.checkoutBatchId}')" class="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 flex items-center"><i class="fa-solid fa-arrow-rotate-right w-5"></i> Retomar pagamento</button>` : ""}
                 <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-circle-info w-5 text-gray-400"></i> Detalhes</button>
               </div>
             </td>
@@ -2314,14 +2119,7 @@
       function openActionModalReputacao() {
         if (selectedOrderIds.size === 0) return;
         const count = selectedOrderIds.size;
-        const wallet = loadWallet();
-        if (wallet.credits < count) {
-          abrirModalSaldoInsuficiente(count);
-          return;
-        }
         document.getElementById("modal-count").innerText = count;
-        const debitEl = document.getElementById("modal-debit-amount");
-        if (debitEl) debitEl.innerText = count + " remoção(ões)";
         const listContainer = document.getElementById("modal-order-list");
         listContainer.innerHTML = "";
         let previewIds = Array.from(selectedOrderIds).slice(0, 3);
@@ -2340,38 +2138,20 @@
       }
 
       function confirmPartnerAction() {
-        const count = selectedOrderIds.size;
-        const wallet = loadWallet();
-        if (wallet.credits < count) {
-          closeModal();
-          abrirModalSaldoInsuficiente(count);
-          return;
-        }
-        wallet.credits -= count;
-        wallet.history.unshift({
-          type: "debit",
-          amount: 0,
-          credits: count,
-          at: new Date().toISOString(),
-          orders: count,
-        });
-        saveWallet(wallet);
+        const orderIds = Array.from(selectedOrderIds);
+        if (!orderIds.length) return;
+        const batch = createCheckoutBatch(orderIds);
         const now = new Date();
         orders = orders.map((order) => {
           if (selectedOrderIds.has(order.id)) {
             const updatedOrder = { ...order };
-            updatedOrder.status = "Encaminhado p/ FNVJ";
-            updatedOrder.debitado = true;
+            updatedOrder.status = STATUS_AGUARDANDO;
+            updatedOrder.checkoutBatchId = batch.id;
             updatedOrder.historico.push({
+              id: "fnvj-requested-" + batch.id,
               date: formatDateFull(now),
-              action:
-                "Acionamento de parceiro especialista (Fique no Verde Já)",
+              action: "Solicitação criada; aguardando checkout de demonstração na FNVJ",
               type: "partner_init",
-            });
-            updatedOrder.historico.push({
-              date: formatDateFull(now),
-              action: "Consumo de 1 remoção do pacote pré-pago",
-              type: "system",
             });
             return updatedOrder;
           }
@@ -2380,12 +2160,7 @@
         saveData();
         selectedOrderIds.clear();
         closeModal();
-        if (currentView === "sac-reputacao") {
-          renderReputacao(document.getElementById("view-container"));
-        } else {
-          navigate(currentView);
-        }
-        showToastOps("Tratativas encaminhadas. Remoções debitadas do pacote.");
+        redirectToCheckout(batch);
       }
 
       // --- Ações comuns (menu, drawer, etc.) ---
@@ -2433,19 +2208,6 @@
         const content = document.getElementById("drawer-content");
         const footer = document.getElementById("drawer-footer");
 
-        let pagamentoStatusText = "";
-        let pagamentoStatusClass = "";
-        let pagamentoAuxText = "";
-        if (order.debitado) {
-          pagamentoStatusText = "Debitado da carteira";
-          pagamentoStatusClass = "text-green-600";
-          pagamentoAuxText = "Valor da tratativa já foi consumido no acionamento.";
-        } else {
-          pagamentoStatusText = "Aguardando acionamento";
-          pagamentoStatusClass = "text-yellow-600";
-          pagamentoAuxText = "O débito ocorre na carteira pré-paga ao acionar a FNVJ.";
-        }
-
         let html = `
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6 shadow-seller">
                     <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
@@ -2457,13 +2219,6 @@
                         <div><span class="text-gray-500 block text-xs uppercase">Atraso</span> <span class="font-medium text-red-500">${order.diasAtraso} dias</span></div>
                         <div class="col-span-2"><span class="px-2 py-1 text-[10px] rounded-md border bg-amber-50 text-amber-800 border-amber-200 font-semibold inline-flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Reputação afetada</span></div>
                         <div><span class="text-gray-500 block text-xs uppercase">Status Atual</span> <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getStatusColor(order.status)} font-medium inline-block">${order.status}</span></div>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-500">Pagamento da tratativa</span>
-                            <span class="text-xs font-medium ${pagamentoStatusClass}">${pagamentoStatusText}</span>
-                        </div>
-                        <p class="text-xs text-gray-400 mt-1">${pagamentoAuxText}</p>
                     </div>
                 </div>
                 <h3 class="font-semibold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-list-ul mr-2 text-gray-400"></i> Histórico do Pedido</h3>
@@ -2494,7 +2249,15 @@
         content.innerHTML = html;
 
         const currentIndex = STATUS_FLOW.indexOf(order.status);
-        if (currentIndex > 0 && currentIndex < STATUS_FLOW.length - 1) {
+        if (order.status === STATUS_AGUARDANDO && order.checkoutBatchId) {
+          footer.innerHTML = `
+                    <button onclick="retomarPagamento('${order.checkoutBatchId}')" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded shadow-sm font-medium transition flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-rotate-right mr-2"></i> Retomar pagamento na FNVJ
+                    </button>
+                    <p class="text-center text-[10px] text-gray-400 mt-2">Ambiente de demonstração, sem cobrança real.</p>
+                `;
+          footer.style.display = "block";
+        } else if (currentIndex > 1 && currentIndex < STATUS_FLOW.length - 1) {
           const nextStatus = STATUS_FLOW[currentIndex + 1];
           footer.innerHTML = `
                     <div class="space-y-2">
@@ -2522,6 +2285,7 @@
         );
         if (orderIndex === -1) return;
         const order = orders[orderIndex];
+        if (order.status === STATUS_AGUARDANDO) return;
         const currentIndex = STATUS_FLOW.indexOf(order.status);
         if (currentIndex < STATUS_FLOW.length - 1) {
           const nextStatus = STATUS_FLOW[currentIndex + 1];
@@ -3420,11 +3184,14 @@
       window.onload = function () {
         const solo = applySoloMode();
         initData();
+        const checkoutMessage = consumeCheckoutReturn();
         loadVinculoStore();
         const imported = consumeVinculoImportFromUrl();
         updateVinculoNavBadge();
-        if (imported || solo === "vinculo") navigate("vinculo");
+        if (checkoutMessage) navigate("sac-reputacao");
+        else if (imported || solo === "vinculo") navigate("vinculo");
         else navigate("sac-reputacao");
+        if (checkoutMessage) setTimeout(() => showToastOps(checkoutMessage), 100);
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
