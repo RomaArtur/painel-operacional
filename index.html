@@ -1997,8 +1997,7 @@
               <table class="w-full text-left border-collapse">
                 <thead><tr class="table-header-dark text-xs tracking-wider">
                   <th class="p-3 w-12 text-center"><input type="checkbox" id="selectAllReputacao" class="custom-checkbox" onchange="toggleSelectAllReputacao(this)"></th>
-                  <th class="p-3 font-medium">REMESSA</th>
-                  <th class="p-3 font-medium">ID DE VENDA</th>
+                  <th class="p-3 font-medium">ID DO PEDIDO</th>
                   <th class="p-3 font-medium">${PARTY_COL.toUpperCase()}</th>
                   <th class="p-3 font-medium">PREV. ENTREGA</th>
                   <th class="p-3 font-medium">COLETA/RECEB.</th>
@@ -2053,8 +2052,7 @@
           tr.className = "border-b border-gray-100 table-row-hover transition-colors relative";
           tr.innerHTML = `
             <td class="p-3 text-center"><input type="checkbox" class="custom-checkbox row-checkbox-reputacao" value="${order.id}" ${isSelected ? "checked" : ""} ${!isActionable ? "disabled" : ""} onchange="toggleRowSelectionReputacao('${order.id}', this.checked)"></td>
-            <td class="p-3 font-medium text-gray-800">${order.remessa}</td>
-            <td class="p-3 font-mono text-xs text-gray-700">${order.idVenda || order.pedido}</td>
+            <td class="p-3 font-mono text-xs text-gray-700">${order.pedido || order.idVenda}</td>
             <td class="p-3"><div class="text-gray-800 truncate w-32 md:w-auto" title="${order.cliente}">${order.cliente}</div></td>
             <td class="p-3 text-gray-600">${order.dataPrevista}</td>
             <td class="p-3 text-gray-600">${order.dataColeta || "—"}</td>
