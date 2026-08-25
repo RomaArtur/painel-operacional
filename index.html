@@ -416,6 +416,31 @@
           <div
             class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
           >
+            Comercial
+          </div>
+
+          <!-- Solicitações de vínculo -->
+          <a
+            href="#"
+            onclick="navigate('vinculo')"
+            id="nav-vinculo"
+            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+            data-title="Vínculo com Sellers"
+            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e ativação do acesso."
+            data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
+            onmouseenter="showTooltip(event, this)"
+            onmouseleave="hideTooltip()"
+          >
+            <div class="flex items-center">
+              <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
+              <span>Solicitações de vínculo</span>
+            </div>
+            <span id="vinculo-nav-badge" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
+          </a>
+
+          <div
+            class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
+          >
             Ferramentas
           </div>
 
@@ -428,25 +453,6 @@
               class="fa-solid fa-layer-group w-5 text-center mr-3 text-gray-500"
             ></i>
             <span>Sub-Bases</span>
-          </a>
-
-          <!-- Solicitações de vínculo -->
-          <a
-            href="#"
-            onclick="navigate('vinculo')"
-            id="nav-vinculo"
-            class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-            data-title="Vínculo com Sellers"
-            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e login."
-            data-sub="A conversão só ocorre após cadastro e login criados no ambiente da transportadora."
-            onmouseenter="showTooltip(event, this)"
-            onmouseleave="hideTooltip()"
-          >
-            <div class="flex items-center">
-              <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
-              <span>Solicitações de vínculo</span>
-            </div>
-            <span id="vinculo-nav-badge" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
           </a>
 
           <!-- Controle de reputação com badge "N" e tooltip -->
@@ -658,18 +664,8 @@
           <div
             class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
           >
-            Ferramentas
+            Comercial
           </div>
-
-          <a
-            href="#"
-            class="flex items-center px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-          >
-            <i
-              class="fa-solid fa-layer-group w-5 text-center mr-3 text-gray-500"
-            ></i
-            ><span>Sub-Bases</span>
-          </a>
 
           <!-- Solicitações de vínculo (mobile) -->
           <a
@@ -681,8 +677,8 @@
             id="nav-vinculo-mobile"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
             data-title="Vínculo com Sellers"
-            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e login."
-            data-sub="A conversão só ocorre após cadastro e login criados no ambiente da transportadora."
+            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e ativação do acesso."
+            data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
           >
@@ -691,6 +687,22 @@
               <span>Solicitações de vínculo</span>
             </div>
             <span id="vinculo-nav-badge-mobile" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
+          </a>
+
+          <div
+            class="px-3 pt-4 mb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
+          >
+            Ferramentas
+          </div>
+
+          <a
+            href="#"
+            class="flex items-center px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
+          >
+            <i
+              class="fa-solid fa-layer-group w-5 text-center mr-3 text-gray-500"
+            ></i
+            ><span>Sub-Bases</span>
           </a>
 
           <!-- Controle de reputação com badge "N" e tooltip (mobile) -->
@@ -984,7 +996,7 @@
       </div>
     </div>
 
-    <!-- Modal compartilhar login com o seller -->
+    <!-- Modal de confirmação da liberação do acesso -->
     <div
       id="vinculo-share-modal"
       class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -993,7 +1005,7 @@
       <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200">
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-gray-800 flex items-center">
-            <i class="fa-solid fa-share-nodes text-tracken-green mr-2"></i> Compartilhar login
+            <i class="fa-solid fa-circle-check text-tracken-green mr-2"></i> Acesso liberado
           </h3>
           <button onclick="fecharModalShareVinculo()" class="text-gray-400 hover:text-gray-600 transition">
             <i class="fa-solid fa-xmark text-lg"></i>
@@ -1001,28 +1013,17 @@
         </div>
         <div class="p-6 space-y-4">
           <p class="text-sm text-gray-600">
-            Envie o acesso ao seller. A senha aparece só nesta tela.
+            O acesso do seller foi ativado e o e-mail de liberação foi registrado. A senha escolhida no cadastro não é exibida ao operacional.
           </p>
           <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm space-y-2">
             <div class="flex justify-between gap-3"><span class="text-gray-500">E-mail</span><span id="vinculo-share-email" class="font-medium text-gray-800 text-right break-all"></span></div>
             <div class="flex justify-between gap-3"><span class="text-gray-500">Usuário</span><span id="vinculo-share-user" class="font-medium text-gray-800 text-right break-all"></span></div>
-            <div class="flex justify-between gap-3"><span class="text-gray-500">Senha</span><span id="vinculo-share-pass" class="font-medium text-gray-800 text-right"></span></div>
             <div class="flex justify-between gap-3"><span class="text-gray-500">Perfil</span><span class="font-medium text-gray-800">Cliente</span></div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" onclick="enviarLoginVinculoEmail()" class="px-3 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-sm font-medium">
-              <i class="fa-solid fa-envelope mr-1"></i> E-mail
-            </button>
-            <button type="button" onclick="enviarLoginVinculoWhatsapp()" class="px-3 py-2 bg-[#25D366] hover:bg-[#1ebe5c] text-white rounded text-sm font-medium">
-              <i class="fa-brands fa-whatsapp mr-1"></i> WhatsApp
-            </button>
-            <button type="button" onclick="copiarLoginVinculo()" class="px-3 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-sm font-medium">
-              <i class="fa-solid fa-copy mr-1"></i> Copiar
-            </button>
+            <div class="flex justify-between gap-3"><span class="text-gray-500">Status</span><span class="font-semibold text-green-700">TRACKen Seller liberado</span></div>
           </div>
           <div class="flex justify-end pt-1">
             <button type="button" onclick="fecharModalShareVinculo()" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium text-sm">
-              Concluir
+              Fechar
             </button>
           </div>
         </div>
@@ -1474,6 +1475,11 @@
         { name: "Shopee", logo: "Shopee", color: "bg-orange-500 text-white" },
         { name: "Magalu", logo: "Magalu", color: "bg-blue-600 text-white" },
         { name: "Amazon", logo: "Amazon", color: "bg-gray-800 text-white" },
+        { name: "Bling", logo: "Bling", color: "bg-green-600 text-white" },
+        { name: "VTEX", logo: "VTEX", color: "bg-pink-600 text-white" },
+        { name: "Tiny", logo: "Tiny", color: "bg-blue-500 text-white" },
+        { name: "Shopify", logo: "Shopify", color: "bg-emerald-600 text-white" },
+        { name: "Outros", logo: "Outros", color: "bg-gray-500 text-white" },
       ];
 
       const STATUS_FLOW = [
@@ -1509,15 +1515,32 @@
         email: "contato@mundodoseletros.com.br",
         telefone: "(11) 98888-0001",
         cep: "01001-000",
+        marketplaces: ["mercadolivre", "shopee"],
       };
       const VINCULO_STATUS_LABEL = {
         AGUARDANDO_ANALISE: "Aguardando análise",
         EM_CONTATO: "Em contato",
         APROVADA: "Aprovada",
         RECUSADA: "Recusada",
-        CADASTRO_EM_CRIACAO: "Cadastro em criação",
+        CADASTRO_EM_CRIACAO: "Aguardando ativação",
         CONCLUIDA: "Concluída",
       };
+
+      function normalizeVinculoRequest(req) {
+        const snapshot = { ...(req?.sellerSnapshot || {}) };
+        snapshot.documento = snapshot.documento || snapshot.cnpj || "";
+        snapshot.marketplaces = snapshot.marketplaces || req?.marketplaces || [];
+        return {
+          ...req,
+          origem: req?.origem || "TRACKEN",
+          marketplaces: req?.marketplaces || snapshot.marketplaces || [],
+          sellerSnapshot: snapshot,
+        };
+      }
+
+      function vinculoOrigemLabel(origem) {
+        return origem === "TRANSPORTADORA" ? "Transportadora" : "TRACKen";
+      }
 
       function emptyVinculoStore() {
         return {
@@ -1544,7 +1567,7 @@
         try {
           const parsed = JSON.parse(raw);
           if (!parsed.seller) parsed.seller = { ...DEMO_SELLER };
-          parsed.requests = parsed.requests || [];
+          parsed.requests = (parsed.requests || []).map(normalizeVinculoRequest);
           parsed.customers = parsed.customers || [];
           parsed.logins = parsed.logins || [];
           parsed.events = parsed.events || [];
@@ -1566,7 +1589,9 @@
         const packed = params.get("importVinculo");
         if (!packed) return false;
         try {
-          const req = JSON.parse(decodeURIComponent(escape(atob(packed))));
+          const req = normalizeVinculoRequest(
+            JSON.parse(decodeURIComponent(escape(atob(packed))))
+          );
           if (!req || !req.requestId) return false;
           const store = loadVinculoStore();
           const idx = store.requests.findIndex((r) => r.requestId === req.requestId);
@@ -2557,7 +2582,7 @@
         container.innerHTML = `
     <div class="mb-6">
       <div class="text-sm text-gray-400 mb-1 flex items-center">
-        Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+        Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
         <span class="text-gray-600 font-medium">Solicitações de vínculo</span>
       </div>
       <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
@@ -2565,7 +2590,7 @@
         Solicitações de vínculo
       </h1>
       <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-        Analise pedidos de vínculo enviados pelo TRACKen Seller. A conversão só ocorre após cadastro e login no ambiente da transportadora.
+        Analise pedidos de vínculo enviados pelo TRACKen Seller. O acesso só é liberado após cadastro e ativação no ambiente da transportadora.
       </p>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -2592,10 +2617,13 @@
         <option value="AGUARDANDO_ANALISE">Aguardando análise</option>
         <option value="EM_CONTATO">Em contato</option>
         <option value="APROVADA">Aprovada</option>
-        <option value="CADASTRO_EM_CRIACAO">Cadastro em criação</option>
+        <option value="CADASTRO_EM_CRIACAO">Aguardando ativação</option>
         <option value="CONCLUIDA">Concluída</option>
         <option value="RECUSADA">Recusada</option>
       </select>
+      <button type="button" onclick="copiarLinkCadastroTransportadora()" class="w-full sm:w-auto px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded text-sm font-semibold inline-flex items-center justify-center gap-2">
+        <i class="fa-solid fa-link"></i> Gerar link da transportadora
+      </button>
     </div>
     <div class="bg-white rounded-b shadow-seller overflow-hidden border border-t-0 border-gray-200">
       <div class="overflow-x-auto">
@@ -2603,8 +2631,8 @@
           <thead><tr class="table-header-dark text-xs tracking-wider">
             <th class="p-3 font-medium">ID</th>
             <th class="p-3 font-medium">SELLER</th>
-            <th class="p-3 font-medium">EMPRESA</th>
-            <th class="p-3 font-medium">CNPJ</th>
+            <th class="p-3 font-medium">ORIGEM</th>
+            <th class="p-3 font-medium">CPF/CNPJ</th>
             <th class="p-3 font-medium">E-MAIL / TELEFONE</th>
             <th class="p-3 font-medium">DATA</th>
             <th class="p-3 font-medium">STATUS</th>
@@ -2643,9 +2671,7 @@
               <td colspan="8" class="p-8 text-center text-gray-500">
                 <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-3 block"></i>
                 <p class="font-medium text-gray-700">Nenhuma solicitação de vínculo</p>
-                <p class="text-xs mt-1 max-w-md mx-auto">
-                  As solicitações do New Seller neste mesmo origin aparecem sozinhas. Na Vercel, envie pelo New Seller com a URL deste operacional — a lista abre com <code class="text-gray-600">?importVinculo=</code>.
-                </p>
+                <p class="text-xs mt-1 max-w-md mx-auto">As novas solicitações do Seller aparecerão automaticamente aqui.</p>
               </td>
             </tr>`;
           return;
@@ -2658,8 +2684,8 @@
               <tr class="border-b border-gray-100 table-row-hover transition-colors relative">
                 <td class="p-3"><div class="font-medium text-gray-800">${req.requestId}</div><div class="text-[10px] text-gray-400">${req.sellerId}</div></td>
                 <td class="p-3 text-gray-800">${snap.nome || "—"}</td>
-                <td class="p-3 text-gray-800">${snap.empresa || "—"}</td>
-                <td class="p-3 text-gray-600">${snap.cnpj || "—"}</td>
+                <td class="p-3"><span class="inline-flex px-2 py-1 rounded border text-[11px] font-semibold ${req.origem === "TRANSPORTADORA" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-green-50 border-green-200 text-green-700"}">${vinculoOrigemLabel(req.origem)}</span></td>
+                <td class="p-3 text-gray-600">${snap.documento || snap.cnpj || "—"}</td>
                 <td class="p-3"><div class="text-gray-800">${snap.email || "—"}</div><div class="text-xs text-gray-500">${snap.telefone || ""}</div></td>
                 <td class="p-3 text-gray-600 whitespace-nowrap">${formatVinculoDate(req.createdAt)}</td>
                 <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-md border ${getVinculoStatusColor(req.status)} font-medium inline-flex items-center">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></td>
@@ -2686,7 +2712,7 @@
           ${canApprove ? `<button onclick="aprovarVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-check w-5 text-gray-400"></i> Aprovar solicitação</button>` : ""}
           ${canReject ? `<button onclick="abrirModalRecusarVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"><i class="fa-solid fa-ban w-5 text-red-400"></i> Recusar solicitação</button>` : ""}
           ${canCadastro ? `<button onclick="irParaCadastroVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-user-plus w-5 text-gray-400"></i> Criar cadastro</button>` : ""}
-          ${canLogin ? `<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-key w-5 text-gray-400"></i> Criar login</button>` : ""}
+          ${canLogin ? `<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-user-check w-5 text-gray-400"></i> Ativar acesso</button>` : ""}
         `;
       }
 
@@ -2712,8 +2738,8 @@
             <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
               <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">ID de origem do Seller</span> <span class="font-medium">${req.sellerId}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Seller</span> <span class="font-medium">${snap.nome || "—"}</span></div>
-              <div><span class="text-gray-500 block text-xs uppercase">Empresa</span> <span class="font-medium">${snap.empresa || "—"}</span></div>
-              <div><span class="text-gray-500 block text-xs uppercase">CNPJ</span> <span class="font-medium">${snap.cnpj || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Origem</span> <span class="font-medium">${vinculoOrigemLabel(req.origem)}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">CPF/CNPJ</span> <span class="font-medium">${snap.documento || snap.cnpj || "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Telefone</span> <span class="font-medium">${snap.telefone || "—"}</span></div>
               <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">E-mail</span> <span class="font-medium">${snap.email || "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Status</span> <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getVinculoStatusColor(req.status)} font-medium inline-block">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></div>
@@ -2722,8 +2748,8 @@
               ${req.carrierLoginId ? `<div><span class="text-gray-500 block text-xs uppercase">Login</span> <span class="font-medium">${req.carrierLoginId}</span></div>` : ""}
             </div>
             ${req.status === "APROVADA" ? `<p class="text-xs text-emerald-700 mt-4 bg-emerald-50 border border-emerald-100 rounded p-2">Solicitação aprovada. Continue o processo criando o cadastro do Seller no ambiente da transportadora.</p>` : ""}
-            ${req.status === "CADASTRO_EM_CRIACAO" ? `<p class="text-xs text-orange-700 mt-4 bg-orange-50 border border-orange-100 rounded p-2">Cadastro criado. Crie o login para concluir o vínculo. O Seller ainda não está convertido.</p>` : ""}
-            ${req.status === "CONCLUIDA" ? `<p class="text-xs text-green-700 mt-4 bg-green-50 border border-green-100 rounded p-2">Vínculo concluído. Seller convertido.</p>` : ""}
+            ${req.status === "CADASTRO_EM_CRIACAO" ? `<p class="text-xs text-orange-700 mt-4 bg-orange-50 border border-orange-100 rounded p-2">Cadastro criado. Ative o acesso para concluir. O TRACKen Seller ainda permanece bloqueado.</p>` : ""}
+            ${req.status === "CONCLUIDA" ? `<p class="text-xs text-green-700 mt-4 bg-green-50 border border-green-100 rounded p-2">Vínculo concluído. Acesso ao TRACKen Seller liberado e e-mail registrado.</p>` : ""}
           </div>
           <h3 class="font-semibold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-list-ul mr-2 text-gray-400"></i> Histórico</h3>
           <div class="timeline-container">
@@ -2755,7 +2781,7 @@
           buttons.push(`<button onclick="irParaCadastroVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Criar cadastro</button>`);
         }
         if (req.status === "CADASTRO_EM_CRIACAO") {
-          buttons.push(`<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Criar login</button>`);
+          buttons.push(`<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full py-2.5 bg-tracken-green hover:bg-green-600 text-white rounded shadow-sm font-medium transition">Ativar acesso</button>`);
         }
         if (buttons.length) {
           footer.innerHTML = `<div class="space-y-2">${buttons.join("")}</div>`;
@@ -2807,7 +2833,7 @@
           r.status = "APROVADA";
           r.historico.push({
             at: nowIso(),
-            action: "Solicitação aprovada. Cadastro e login ainda pendentes.",
+            action: "Solicitação aprovada. Cadastro e ativação do acesso ainda pendentes.",
             type: "carrier",
           });
         }, "carrier_link_request_approved");
@@ -2873,8 +2899,13 @@
       const VINCULO_SERVICOS_EXEMPLO = [
         { id: "mercadolivre", nome: "Mercado Livre" },
         { id: "shopee", nome: "Shopee" },
-        { id: "amazon", nome: "Amazon" },
         { id: "magalu", nome: "Magalu" },
+        { id: "bling", nome: "Bling" },
+        { id: "vtex", nome: "VTEX" },
+        { id: "tiny", nome: "Tiny" },
+        { id: "amazon", nome: "Amazon" },
+        { id: "shopify", nome: "Shopify" },
+        { id: "outros", nome: "Outros" },
       ];
 
       function escapeVinculoAttr(value) {
@@ -2929,11 +2960,16 @@
           return;
         }
         const snap = req.sellerSnapshot || {};
+        const selectedMarketplaces = new Set(
+          [...(req.marketplaces || []), ...(snap.marketplaces || [])].map((item) =>
+            String(item).toLowerCase().replace(/[^a-z0-9]/g, "")
+          )
+        );
         const servicosHtml = VINCULO_SERVICOS_EXEMPLO.map(
           (servico) => `
             <label class="flex flex-col sm:flex-row sm:items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-tracken-green/40">
               <span class="flex items-center gap-2 sm:w-44 shrink-0">
-                <input type="checkbox" name="servico-${servico.id}" class="rounded border-gray-300 text-tracken-green focus:ring-tracken-green" />
+                <input type="checkbox" name="servico-${servico.id}" ${selectedMarketplaces.has(servico.id) ? "checked" : ""} class="rounded border-gray-300 text-tracken-green focus:ring-tracken-green" />
                 <span class="text-sm font-medium text-gray-800">${servico.nome}</span>
               </span>
               <select name="tabela-${servico.id}" class="${inputClassVinculo()}">
@@ -2944,7 +2980,7 @@
         container.innerHTML = `
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
-              Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
               <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
               <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
               <span class="text-gray-600 font-medium">Criar cadastro</span>
@@ -2961,8 +2997,8 @@
               <h2 class="text-sm font-semibold text-gray-800 mb-4">Identificação</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Documento (CNPJ/CPF) *</label>
-                  <input name="documento" type="text" required value="${escapeVinculoAttr(snap.cnpj)}" class="${inputClassVinculo()}" />
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">CPF/CNPJ *</label>
+                  <input name="documento" type="text" required value="${escapeVinculoAttr(snap.documento || snap.cnpj)}" class="${inputClassVinculo()}" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Razão social *</label>
@@ -3091,7 +3127,7 @@
         target.updatedAt = nowIso();
         target.historico.push({
           at: target.updatedAt,
-          action: `Cadastro criado (${carrierCustomerId}). Login ainda pendente.`,
+          action: `Cadastro criado (${carrierCustomerId}). Ativação do acesso ainda pendente.`,
           type: "carrier",
         });
         store.events.push({
@@ -3105,7 +3141,7 @@
         });
         saveVinculoStore(store);
         notifySellerVinculoStatus(target);
-        showToastOps("Cadastro criado. Crie o login para concluir o vínculo.");
+        showToastOps("Cadastro criado. Ative o acesso para concluir o vínculo.");
         irParaLoginVinculo(req.requestId);
       }
 
@@ -3116,7 +3152,7 @@
           return;
         }
         if (req.status !== "CADASTRO_EM_CRIACAO" || !req.carrierCustomerId) {
-          container.innerHTML = `<div class="text-gray-500 p-8">Crie o cadastro antes do login. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
+          container.innerHTML = `<div class="text-gray-500 p-8">Crie o cadastro antes de ativar o acesso. <button class="text-tracken-green" onclick="navigate('vinculo')">Voltar</button></div>`;
           return;
         }
         const customer = getVinculoCustomer(req.carrierCustomerId) || {};
@@ -3127,16 +3163,16 @@
         container.innerHTML = `
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
-              Ferramentas <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
+              Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
               <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
               <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
-              <span class="text-gray-600 font-medium">Criar login</span>
+              <span class="text-gray-600 font-medium">Ativar acesso</span>
             </div>
             <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
-              <i class="fa-solid fa-key text-tracken-green mr-2"></i> Criar login
+              <i class="fa-solid fa-user-check text-tracken-green mr-2"></i> Ativar acesso
             </h1>
             <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-              E-mail, usuário, documento e WhatsApp vêm do cadastro. Defina a senha para concluir.
+              Revise os dados e libere o acesso criado pelo seller. A senha escolhida no cadastro não fica visível para o operacional.
             </p>
           </div>
           <form id="form-login-vinculo" onsubmit="salvarLoginVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-3xl space-y-5">
@@ -3162,39 +3198,43 @@
                 <input name="perfil" type="text" value="Cliente" readonly class="${readonlyClassVinculo()}" />
                 <p class="text-[11px] text-gray-400 mt-1">Padrão bloqueado: Cliente</p>
               </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Senha</label>
-                <input name="senha" type="password" required minlength="6" class="${inputClassVinculo()}" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Confirmar senha</label>
-                <input name="senhaConfirmacao" type="password" required minlength="6" class="${inputClassVinculo()}" />
+              <div class="md:col-span-2 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 flex items-start gap-3">
+                <i class="fa-solid fa-shield-halved mt-0.5"></i>
+                <span>Ao concluir, o TRACKen Seller será liberado e um único e-mail de confirmação será registrado para <strong>${escapeVinculoAttr(email)}</strong>.</span>
               </div>
             </div>
             <div class="flex justify-end space-x-3 pt-2">
               <button type="button" onclick="navigate('vinculo')" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
-              <button type="submit" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium">Criar login e concluir vínculo</button>
+              <button type="submit" class="px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded font-medium">Ativar acesso e concluir</button>
             </div>
           </form>
         `;
-      }
-
-      function vinculoShareText(data) {
-        return [
-          "Seu acesso na transportadora foi criado.",
-          `E-mail: ${data.email}`,
-          `Usuário: ${data.username}`,
-          `Senha: ${data.senha}`,
-          "Perfil: Cliente",
-        ].join("\n");
       }
 
       function abrirModalShareVinculo(data) {
         pendingVinculoShare = data;
         document.getElementById("vinculo-share-email").innerText = data.email || "—";
         document.getElementById("vinculo-share-user").innerText = data.username || "—";
-        document.getElementById("vinculo-share-pass").innerText = data.senha || "—";
         document.getElementById("vinculo-share-modal").classList.add("active");
+      }
+
+      function getLinkCadastroTransportadora() {
+        return new URL(
+          "../painel-new-seller/criar-conta/transportadora-demo/",
+          location.href
+        ).href;
+      }
+
+      function copiarLinkCadastroTransportadora() {
+        const link = getLinkCadastroTransportadora();
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(link).then(
+            () => showToastOps("Link da Transportadora Demo copiado."),
+            () => showToastOps(`Link gerado: ${link}`)
+          );
+        } else {
+          showToastOps(`Link gerado: ${link}`);
+        }
       }
 
       function fecharModalShareVinculo() {
@@ -3205,43 +3245,11 @@
         if (requestId) openVinculoDrawer(requestId);
       }
 
-      function enviarLoginVinculoEmail() {
-        if (!pendingVinculoShare) return;
-        const subject = encodeURIComponent("Acesso criado na transportadora");
-        const body = encodeURIComponent(vinculoShareText(pendingVinculoShare));
-        window.open(`mailto:${pendingVinculoShare.email}?subject=${subject}&body=${body}`);
-        showToastOps("Abrimos o e-mail para enviar o acesso ao seller.");
-      }
-
-      function enviarLoginVinculoWhatsapp() {
-        if (!pendingVinculoShare) return;
-        const url = `${phoneToWa(pendingVinculoShare.whatsapp)}?text=${encodeURIComponent(vinculoShareText(pendingVinculoShare))}`;
-        window.open(url, "_blank", "noopener");
-        showToastOps("Abrimos o WhatsApp para enviar o acesso ao seller.");
-      }
-
-      function copiarLoginVinculo() {
-        if (!pendingVinculoShare) return;
-        const text = vinculoShareText(pendingVinculoShare);
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(text).then(
-            () => showToastOps("Dados copiados. Cole no canal do seller."),
-            () => showToastOps("Não foi possível copiar.")
-          );
-        } else {
-          showToastOps("Não foi possível copiar.");
-        }
-      }
-
       function salvarLoginVinculo(event) {
         event.preventDefault();
         const req = getVinculoRequest(vinculoFormRequestId);
         if (!req) return;
         const form = event.target;
-        if (form.senha.value !== form.senhaConfirmacao.value) {
-          showToastOps("As senhas não coincidem.");
-          return;
-        }
         const store = loadVinculoStore();
         const carrierLoginId = nextVinculoId("USR", store.logins, "carrierLoginId", 88291);
         store.logins.push({
@@ -3254,6 +3262,8 @@
           documento: form.documento.value,
           whatsapp: form.whatsapp.value,
           perfil: "cliente",
+          credentialSource: "seller_signup",
+          accessActivatedAt: nowIso(),
           createdAt: nowIso(),
         });
         const target = store.requests.find((r) => r.requestId === req.requestId);
@@ -3262,11 +3272,11 @@
         target.updatedAt = nowIso();
         target.historico.push({
           at: target.updatedAt,
-          action: `Login criado (${carrierLoginId}). Vínculo concluído. Seller convertido.`,
+          action: `Acesso ativado (${carrierLoginId}). Vínculo concluído e TRACKen Seller liberado.`,
           type: "carrier",
         });
         store.events.push({
-          event: "carrier_login_created",
+          event: "seller_access_activated",
           at: target.updatedAt,
           payload: {
             sellerId: req.sellerId,
@@ -3285,14 +3295,22 @@
             carrierLoginId,
           },
         });
+        store.events.push({
+          event: "seller_access_email_sent",
+          at: target.updatedAt,
+          payload: {
+            sellerId: req.sellerId,
+            requestId: req.requestId,
+            email: form.email.value,
+          },
+        });
         saveVinculoStore(store);
         notifySellerVinculoStatus(target);
-        showToastOps("Login criado. Seller convertido. Compartilhe o acesso.");
+        showToastOps("Acesso ativado. TRACKen Seller liberado e e-mail registrado.");
         abrirModalShareVinculo({
           requestId: req.requestId,
           email: form.email.value,
           username: form.username.value,
-          senha: form.senha.value,
           whatsapp: form.whatsapp.value,
         });
       }
