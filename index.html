@@ -1611,6 +1611,9 @@
             orders.forEach((o) => {
               if (o.status === "Atraso identificado") o.status = STATUS_AFETADA;
               if (o.checkoutBatchId === undefined) o.checkoutBatchId = null;
+              if (!o.pedido || o.pedido === o.idVenda) {
+                o.pedido = String(o.id || "").replace(/^ORD-/, "PED-");
+              }
               delete o.cobrancaRegistrada;
               delete o.debitado;
             });
@@ -1653,7 +1656,7 @@
           const idVenda = String(20000000000 + Math.floor(Math.random() * 7999999999));
           orders.push({
             id: `ORD-${1000 + i}`,
-            pedido: idVenda,
+            pedido: `PED-${1000 + i}`,
             idVenda,
             remessa: `6076${Math.floor(Math.random() * 90000 + 10000)}`,
             cliente: names[Math.floor(Math.random() * names.length)],
@@ -1998,6 +2001,7 @@
                 <thead><tr class="table-header-dark text-xs tracking-wider">
                   <th class="p-3 w-12 text-center"><input type="checkbox" id="selectAllReputacao" class="custom-checkbox" onchange="toggleSelectAllReputacao(this)"></th>
                   <th class="p-3 font-medium">ID DO PEDIDO</th>
+                  <th class="p-3 font-medium">ID DE VENDA</th>
                   <th class="p-3 font-medium">${PARTY_COL.toUpperCase()}</th>
                   <th class="p-3 font-medium">PREV. ENTREGA</th>
                   <th class="p-3 font-medium">COLETA/RECEB.</th>
@@ -2053,6 +2057,7 @@
           tr.innerHTML = `
             <td class="p-3 text-center"><input type="checkbox" class="custom-checkbox row-checkbox-reputacao" value="${order.id}" ${isSelected ? "checked" : ""} ${!isActionable ? "disabled" : ""} onchange="toggleRowSelectionReputacao('${order.id}', this.checked)"></td>
             <td class="p-3 font-mono text-xs text-gray-700">${order.pedido || order.idVenda}</td>
+            <td class="p-3 font-mono text-xs text-gray-700">${order.idVenda}</td>
             <td class="p-3"><div class="text-gray-800 truncate w-32 md:w-auto" title="${order.cliente}">${order.cliente}</div></td>
             <td class="p-3 text-gray-600">${order.dataPrevista}</td>
             <td class="p-3 text-gray-600">${order.dataColeta || "—"}</td>
