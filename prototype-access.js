@@ -3,7 +3,7 @@
 
   var STORAGE_KEY = "tracken_prototype_access_v1";
   var EXPECTED_LOGIN = "tracken";
-  var EXPECTED_PASSWORD = "new-seller";
+  var EXPECTED_PASSWORD = "TRACKen@2026#";
   var root = document.documentElement;
 
   function hasAccess() {
