@@ -813,14 +813,13 @@
       onclick="if(event.target===this) closeModal()"
     >
       <div
-        class="modal-content bg-black rounded-lg shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-700"
+        class="modal-content bg-black rounded-2xl shadow-2xl w-full max-w-3xl mx-4 overflow-hidden border border-gray-700 max-h-[92vh] overflow-y-auto"
       >
         <div
           class="bg-gray-900 px-6 py-4 border-b border-gray-700 flex justify-between items-center"
         >
           <h3 class="text-lg font-semibold text-white flex items-center">
-            <i class="fa-solid fa-handshake text-emerald-400 mr-2"></i> Acionar
-            Parceiro
+            <i class="fa-solid fa-wallet text-emerald-400 mr-2"></i> Remoções e acionamento
           </h3>
           <button
             onclick="closeModal()"
@@ -830,7 +829,7 @@
           </button>
         </div>
         <div class="p-6">
-          <div class="flex justify-center mb-6">
+          <div class="flex justify-center mb-4">
             <img
               src="imgi_1_logolinhafqnvj.png"
               alt="Fique no Verde Já"
@@ -841,39 +840,34 @@
               "
             />
           </div>
-          <p class="text-gray-300 mb-4 text-center">
-            Você está prestes a encaminhar
-            <strong id="modal-count" class="text-white">0</strong> venda(s) com
-            reputação afetada para tratativa com a Fique no Verde Já.
+          <p class="text-gray-300 mb-4 text-center text-sm">
+            Cada acionamento consome <strong class="text-white">1 remoção</strong>. Você selecionou
+            <strong id="modal-count" class="text-white">0</strong> venda(s).
           </p>
-          <div
-            class="bg-emerald-900/30 border border-emerald-700 rounded p-3 mb-4 flex items-start"
-          >
-            <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5 mr-2"></i>
-            <p class="text-xs text-emerald-200">
-              A TRACKen criará a solicitação e direcionará você ao checkout
-              fictício do Mercado Pago. A tratativa só será liberada após a confirmação.
-            </p>
+          <div class="grid grid-cols-3 gap-3 mb-5" aria-label="Resumo de remoções">
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">Saldo atual</div><div class="text-xl font-bold text-white"><span id="modal-wallet-balance">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">Necessárias</div><div class="text-xl font-bold text-white"><span id="modal-required-removals">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">A comprar</div><div class="text-xl font-bold text-emerald-400"><span id="modal-shortage">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
           </div>
-          <div class="bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 text-xs">
-            <div class="flex items-center justify-between text-gray-300 mb-2">
-              <span>Gateway de pagamento</span>
-              <strong class="text-white">Mercado Pago</strong>
+          <div id="modal-package-section" class="mb-5">
+            <div class="flex items-end justify-between gap-3 mb-3"><div><h4 class="text-white font-semibold">Escolha o pacote na TRACKen</h4><p class="text-xs text-gray-400">O Mercado Pago receberá somente a cobrança já preparada.</p></div><span id="modal-package-recommendation" class="text-[11px] font-bold text-emerald-300 bg-emerald-900/40 border border-emerald-700 rounded-full px-2.5 py-1">Recomendado</span></div>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div id="package-flex-card" role="button" tabindex="0" onclick="selectRemovalPackage('flex')" onkeydown="if(event.key==='Enter'||event.key===' ') selectRemovalPackage('flex')" class="text-left border-2 border-emerald-500 bg-emerald-950/30 rounded-xl p-4 transition"><div class="flex items-start justify-between gap-3"><div><div class="text-white font-bold">Flexível</div><div class="text-xs text-gray-400 mt-1">De 1 a 49 remoções</div></div><span class="text-emerald-300 font-bold">R$ 9<span class="text-xs font-normal">/un.</span></span></div><label class="block text-[11px] text-gray-400 mt-4" for="package-flex-quantity">Quantidade</label><input id="package-flex-quantity" type="number" min="1" max="49" value="1" onclick="event.stopPropagation()" oninput="updateRemovalPackageSummary('flex')" class="mt-1 w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" /></div>
+              <div id="package-scale-card" role="button" tabindex="0" onclick="selectRemovalPackage('scale')" onkeydown="if(event.key==='Enter'||event.key===' ') selectRemovalPackage('scale')" class="text-left border-2 border-gray-700 bg-gray-900 rounded-xl p-4 transition"><div class="flex items-start justify-between gap-3"><div><div class="text-white font-bold">Escala</div><div class="text-xs text-gray-400 mt-1">A partir de 50 remoções</div></div><span class="text-emerald-300 font-bold">R$ 7<span class="text-xs font-normal">/un.</span></span></div><label class="block text-[11px] text-gray-400 mt-4" for="package-scale-quantity">Quantidade</label><input id="package-scale-quantity" type="number" min="50" value="50" onclick="event.stopPropagation()" oninput="updateRemovalPackageSummary('scale')" class="mt-1 w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" /></div>
             </div>
-            <div class="h-2 rounded-full overflow-hidden flex bg-gray-700 mb-2" aria-label="Split: 10% TRACKen e 90% FNVJ">
-              <span class="bg-tracken-green" style="width: 10%"></span>
-              <span class="bg-emerald-500" style="width: 90%"></span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-tracken-green font-semibold">10% TRACKen</span>
-              <span class="text-emerald-400 font-semibold">90% FNVJ</span>
-            </div>
-            <p class="text-gray-500 mt-2">Split automático aplicado sobre o valor total do lote.</p>
           </div>
+          <div id="modal-wallet-ready" class="hidden bg-emerald-900/30 border border-emerald-700 rounded-xl p-4 mb-5 text-sm text-emerald-100"><i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i>Seu saldo cobre este acionamento. Nenhum pagamento será necessário.</div>
           <div
-            class="max-h-32 overflow-y-auto border border-gray-700 rounded text-xs text-gray-300 p-2 bg-gray-800 mb-6"
+            class="max-h-24 overflow-y-auto border border-gray-700 rounded text-xs text-gray-300 p-2 bg-gray-800 mb-4"
             id="modal-order-list"
           ></div>
+
+          <div id="modal-payment-summary" class="bg-gray-900 border border-gray-700 rounded-xl p-4 mb-5">
+            <div class="flex items-center justify-between text-sm mb-2"><span class="text-gray-400">Pacote</span><strong id="modal-package-name" class="text-white">Flexível</strong></div>
+            <div class="flex items-center justify-between text-sm mb-2"><span class="text-gray-400">Créditos adquiridos</span><strong id="modal-package-quantity" class="text-white">1 remoção</strong></div>
+            <div class="flex items-center justify-between border-t border-gray-700 pt-3 mt-3"><span class="text-gray-300 font-semibold">Total no Mercado Pago</span><strong id="modal-package-total" class="text-xl text-emerald-400">R$ 9,00</strong></div>
+            <p class="text-[11px] text-gray-500 mt-2">Checkout Pro com split automático: 10% TRACKen e 90% FNVJ. As taxas do Mercado Pago são descontadas da conta recebedora.</p>
+          </div>
 
           <div class="flex justify-end space-x-3">
             <button
@@ -884,9 +878,10 @@
             </button>
             <button
               onclick="confirmPartnerAction()"
+              id="partner-action-submit"
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-sm font-medium transition flex items-center"
             >
-              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Ir para o Mercado Pago
+              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i><span id="partner-action-submit-label">Continuar para o Mercado Pago</span>
             </button>
           </div>
         </div>
@@ -1071,8 +1066,32 @@
       const ACCENT_PAGE = "border-tracken-green bg-green-50 text-tracken-dark";
       const CHECKOUT_SOURCE = "operacional";
       const CHECKOUT_BATCH_KEY = "ops_reputation_checkout_batches";
+      const REMOVAL_WALLET_KEY = "ops_reputation_removal_wallet";
       const PAYMENT_PROVIDER = "Mercado Pago";
       const PAYMENT_SPLIT = { tracken: 10, fnvj: 90 };
+      const REMOVAL_PACKAGES = {
+        flex: { code: "flex", name: "Flexível", min: 1, max: 49, unitPrice: 9 },
+        scale: { code: "scale", name: "Escala", min: 50, max: null, unitPrice: 7 },
+      };
+      let selectedRemovalPackage = "flex";
+
+      function loadRemovalWallet() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(REMOVAL_WALLET_KEY) || "{}");
+          if (parsed.version === 1 && Number.isInteger(parsed.balance) && parsed.balance >= 0) {
+            return { version: 1, balance: parsed.balance, transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [] };
+          }
+        } catch (error) {}
+        return { version: 1, balance: 0, transactions: [] };
+      }
+
+      function saveRemovalWallet(wallet) {
+        localStorage.setItem(REMOVAL_WALLET_KEY, JSON.stringify(wallet));
+      }
+
+      function formatCurrency(value) {
+        return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      }
 
       function randomHex(bytes = 16) {
         const values = new Uint8Array(bytes);
@@ -1099,7 +1118,7 @@
         }));
       }
 
-      function createCheckoutBatch(orderIds) {
+      function createCheckoutBatch(orderIds, packageSelection) {
         const store = loadCheckoutBatches();
         const id = crypto.randomUUID ? crypto.randomUUID() : randomHex(16);
         const batch = {
@@ -1108,6 +1127,7 @@
           source: CHECKOUT_SOURCE,
           quantity: orderIds.length,
           orderIds: [...orderIds],
+          package: { ...packageSelection },
           provider: PAYMENT_PROVIDER,
           split: { ...PAYMENT_SPLIT },
           status: "pending",
@@ -1129,7 +1149,12 @@
           Number.isInteger(batch.quantity) &&
           batch.quantity > 0 &&
           Array.isArray(batch.orderIds) &&
-          batch.orderIds.length === batch.quantity
+          batch.orderIds.length === batch.quantity &&
+          batch.package &&
+          REMOVAL_PACKAGES[batch.package.code] &&
+          Number.isInteger(batch.package.quantity) &&
+          batch.package.quantity > 0 &&
+          Number(batch.package.total) > 0
         );
       }
 
@@ -1140,12 +1165,18 @@
         }
         const checkoutUrl = new URL("mercado-pago-checkout.html", location.href);
         const returnUrl = new URL(location.href);
-        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source"].forEach(
+        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source", "fnvj_channel", "fnvj_payment_id"].forEach(
           (key) => returnUrl.searchParams.delete(key)
         );
         checkoutUrl.searchParams.set("version", "1");
         checkoutUrl.searchParams.set("source", CHECKOUT_SOURCE);
         checkoutUrl.searchParams.set("quantity", String(batch.quantity));
+        checkoutUrl.searchParams.set("packageCode", batch.package.code);
+        checkoutUrl.searchParams.set("packageName", batch.package.name);
+        checkoutUrl.searchParams.set("packageQuantity", String(batch.package.quantity));
+        checkoutUrl.searchParams.set("unitPrice", String(batch.package.unitPrice));
+        checkoutUrl.searchParams.set("amount", String(batch.package.total));
+        checkoutUrl.searchParams.set("marketplaceFee", String(batch.package.marketplaceFee));
         checkoutUrl.searchParams.set("batchId", batch.id);
         checkoutUrl.searchParams.set("state", batch.state);
         checkoutUrl.searchParams.set("returnUrl", returnUrl.href);
@@ -1181,7 +1212,7 @@
 
       function cleanCheckoutReturnParams() {
         const url = new URL(location.href);
-        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source"].forEach(
+        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source", "fnvj_channel", "fnvj_payment_id"].forEach(
           (key) => url.searchParams.delete(key)
         );
         history.replaceState({}, document.title, url.pathname + url.search + url.hash);
@@ -1197,12 +1228,14 @@
         const state = params.get("fnvj_state") || "";
         const source = params.get("fnvj_source") || "";
         const version = params.get("fnvj_v") || "";
+        const confirmationChannel = params.get("fnvj_channel") || "";
         const store = loadCheckoutBatches();
         const batch = store.batches[batchId];
 
         if (
           version !== "1" ||
           source !== CHECKOUT_SOURCE ||
+          confirmationChannel !== "webhook-simulated" ||
           !allowedResults.has(result) ||
           !isValidCheckoutBatch(batch) ||
           batch.state !== state
@@ -1220,6 +1253,20 @@
 
         const now = new Date();
         if (result === "paid") {
+          const wallet = loadRemovalWallet();
+          if (wallet.transactions.some((transaction) => transaction.batchId === batch.id)) {
+            cleanCheckoutReturnParams();
+            return "Esta confirmação segura de demonstração já havia sido conciliada.";
+          }
+          wallet.balance += batch.package.quantity;
+          wallet.transactions.push({ id: "credit-" + batch.id, batchId: batch.id, type: "package_credit", quantity: batch.package.quantity, amount: batch.package.total, channel: "webhook_simulated", createdAt: now.toISOString() });
+          if (wallet.balance < batch.quantity) {
+            cleanCheckoutReturnParams();
+            return "Pagamento confirmado, mas o saldo de remoções não cobre os acionamentos. A conciliação foi pausada.";
+          }
+          wallet.balance -= batch.quantity;
+          wallet.transactions.push({ id: "debit-" + batch.id, batchId: batch.id, type: "removal_consumption", quantity: -batch.quantity, orderIds: [...batch.orderIds], createdAt: now.toISOString() });
+          saveRemovalWallet(wallet);
           const orderIds = new Set(batch.orderIds);
           orders = orders.map((order) => {
             if (
@@ -1237,7 +1284,7 @@
                   {
                     id: eventId,
                     date: formatDateFull(now),
-                    action: `Pagamento processado pela TRACKen via ${PAYMENT_PROVIDER}; split de 10% TRACKen e 90% FNVJ confirmado`,
+                    action: `Webhook do ${PAYMENT_PROVIDER} validado pela TRACKen; ${batch.quantity} remoção(ões) consumida(s) e tratativa liberada para a FNVJ`,
                     type: "partner_init",
                   },
                 ];
@@ -1250,10 +1297,11 @@
           saveData();
           batch.status = "paid";
           batch.result = "paid";
+          batch.webhookVerified = true;
           batch.processedAt = now.toISOString();
           saveCheckoutBatches(store);
           cleanCheckoutReturnParams();
-          return "Pagamento confirmado pelo Mercado Pago e conciliado pela TRACKen. Split 10% / 90% aplicado e tratativas encaminhadas à FNVJ.";
+          return `Pagamento confirmado por webhook simulado. ${batch.quantity} remoção(ões) usada(s), ${wallet.balance} restante(s) e tratativas encaminhadas à FNVJ.`;
         }
 
         batch.status = result;
@@ -1711,6 +1759,7 @@
         localStorage.removeItem("tracken_pagamento_configurado");
         localStorage.removeItem("ops_asaas_wallet");
         localStorage.removeItem(CHECKOUT_BATCH_KEY);
+        localStorage.removeItem(REMOVAL_WALLET_KEY);
         localStorage.removeItem("ops_reputacao_intro");
         resetVinculoStoreKeepSeller();
         selectedOrderIds.clear();
@@ -1906,8 +1955,8 @@
             <div class="space-y-4 text-sm text-gray-600 leading-relaxed">
               <p>A tela lista pedidos do <strong>Mercado Livre</strong> em <strong>atraso</strong> cuja reputação foi afetada — identificados pela API do ML. Nem todo atraso gera perda de reputação: só aparecem aqui os que o marketplace sinalizou. Reclamações e denúncias ficam para uma etapa posterior.</p>
               <p>Você seleciona as vendas e aciona a <strong>Fique no Verde Já</strong>, que assume o contato com o cliente e devolve o andamento para o TRACKen.</p>
-              <p>A TRACKen cria a solicitação e direciona você ao <strong>checkout fictício do Mercado Pago</strong>, que exibe a quantidade de acionamentos e permite simular o pagamento.</p>
-              <p>Após a confirmação, você retorna à TRACKen, o split de <strong>10% para a TRACKen</strong> e <strong>90% para a FNVJ</strong> é registrado e a tratativa é liberada para o parceiro.</p>
+              <p>Os pacotes são escolhidos e precificados dentro da <strong>TRACKen</strong>: Flexível (1–49 remoções, R$ 9/un.) ou Escala (a partir de 50, R$ 7/un.). O Mercado Pago recebe apenas a cobrança já preparada.</p>
+              <p>O retorno do checkout não libera o serviço sozinho. Na integração real, a TRACKen valida o <strong>webhook</strong>, credita a carteira, consome 1 remoção por venda e então encaminha a tratativa à FNVJ. O protótipo simula essa confirmação segura.</p>
             </div>
             <button type="button" onclick="acessarReputacao()" class="mt-6 w-full sm:w-auto ${ACCENT_BTN} text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
               Acessar controle de reputação
@@ -1926,6 +1975,7 @@
           ["Em atendimento", "Cliente contatado", "Tratativa concluída"].includes(o.status)
         ).length;
         const resolvidos = orders.filter((o) => o.status === "Resolvido").length;
+        const removalBalance = loadRemovalWallet().balance;
 
         const header = `
           <div class="mb-6">
@@ -1959,6 +2009,10 @@
         }
 
         container.innerHTML = header + `
+          <div class="mb-4 rounded-2xl bg-gradient-to-r from-gray-950 to-gray-800 border border-gray-700 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-seller">
+            <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-wallet"></i></div><div><div class="text-xs text-gray-400">Carteira de remoções</div><div class="text-xl font-bold">${removalBalance} disponível(is)</div><div class="text-[11px] text-gray-400">1 acionamento = 1 remoção • saldo exclusivo deste painel</div></div></div>
+            <div class="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Pagamento confirmado por webhook</div>
+          </div>
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
               <div class="text-xs text-gray-500 mb-1">Reputação afetada</div>
@@ -2133,6 +2187,66 @@
       }
 
       // --- Ações do modal de acionamento (reutilizadas para reputação) ---
+      function getRemovalShortage() {
+        return Math.max(0, selectedOrderIds.size - loadRemovalWallet().balance);
+      }
+
+      function getSelectedRemovalPackage() {
+        const plan = REMOVAL_PACKAGES[selectedRemovalPackage];
+        const input = document.getElementById(`package-${selectedRemovalPackage}-quantity`);
+        const shortage = getRemovalShortage();
+        const minimum = Math.max(plan.min, shortage);
+        let quantity = Math.max(minimum, Math.floor(Number(input?.value) || minimum));
+        if (plan.max) quantity = Math.min(plan.max, quantity);
+        if (input) input.value = String(quantity);
+        const total = quantity * plan.unitPrice;
+        return { code: plan.code, name: plan.name, quantity, unitPrice: plan.unitPrice, total, marketplaceFee: Number((total * PAYMENT_SPLIT.tracken / 100).toFixed(2)) };
+      }
+
+      function selectRemovalPackage(code) {
+        if (!REMOVAL_PACKAGES[code] || (code === "flex" && getRemovalShortage() > 49)) return;
+        selectedRemovalPackage = code;
+        updateRemovalPackageSummary(code);
+      }
+
+      function updateRemovalPackageSummary(code) {
+        if (REMOVAL_PACKAGES[code]) selectedRemovalPackage = code;
+        const selection = getSelectedRemovalPackage();
+        ["flex", "scale"].forEach((planCode) => {
+          const card = document.getElementById(`package-${planCode}-card`);
+          if (!card) return;
+          const active = planCode === selectedRemovalPackage;
+          card.className = `text-left border-2 rounded-xl p-4 transition cursor-pointer ${active ? "border-emerald-500 bg-emerald-950/30" : "border-gray-700 bg-gray-900 hover:border-gray-500"}`;
+        });
+        document.getElementById("modal-package-name").textContent = selection.name;
+        document.getElementById("modal-package-quantity").textContent = `${selection.quantity} remoção(ões)`;
+        document.getElementById("modal-package-total").textContent = formatCurrency(selection.total);
+        document.getElementById("modal-package-recommendation").textContent = selectedRemovalPackage === "flex" ? "Melhor para este lote" : "Melhor custo unitário";
+      }
+
+      function syncRemovalModal() {
+        const wallet = loadRemovalWallet();
+        const required = selectedOrderIds.size;
+        const shortage = Math.max(0, required - wallet.balance);
+        document.getElementById("modal-wallet-balance").textContent = String(wallet.balance);
+        document.getElementById("modal-required-removals").textContent = String(required);
+        document.getElementById("modal-shortage").textContent = String(shortage);
+        const needsPayment = shortage > 0;
+        document.getElementById("modal-package-section").classList.toggle("hidden", !needsPayment);
+        document.getElementById("modal-payment-summary").classList.toggle("hidden", !needsPayment);
+        document.getElementById("modal-wallet-ready").classList.toggle("hidden", needsPayment);
+        document.getElementById("partner-action-submit-label").textContent = needsPayment ? "Continuar para o Mercado Pago" : "Usar saldo e acionar FNVJ";
+        const icon = document.querySelector("#partner-action-submit i");
+        if (icon) icon.className = needsPayment ? "fa-solid fa-arrow-up-right-from-square mr-2" : "fa-solid fa-bolt mr-2";
+        if (!needsPayment) return;
+        document.getElementById("package-flex-quantity").value = String(Math.min(49, Math.max(1, shortage)));
+        document.getElementById("package-scale-quantity").value = String(Math.max(50, shortage));
+        const flexCard = document.getElementById("package-flex-card");
+        if (shortage > 49) { selectedRemovalPackage = "scale"; flexCard.setAttribute("aria-disabled", "true"); }
+        else { selectedRemovalPackage = "flex"; flexCard.removeAttribute("aria-disabled"); }
+        updateRemovalPackageSummary(selectedRemovalPackage);
+      }
+
       function openActionModalReputacao() {
         if (selectedOrderIds.size === 0) return;
         const count = selectedOrderIds.size;
@@ -2147,6 +2261,7 @@
         });
         if (selectedOrderIds.size > 3)
           listContainer.innerHTML += `<div class="py-1 text-center italic mt-1">... e mais ${selectedOrderIds.size - 3} venda(s)</div>`;
+        syncRemovalModal();
         document.getElementById("action-modal").classList.add("active");
       }
 
@@ -2157,8 +2272,26 @@
       function confirmPartnerAction() {
         const orderIds = Array.from(selectedOrderIds);
         if (!orderIds.length) return;
-        const batch = createCheckoutBatch(orderIds);
+        const wallet = loadRemovalWallet();
         const now = new Date();
+        if (wallet.balance >= orderIds.length) {
+          wallet.balance -= orderIds.length;
+          wallet.transactions.push({ id: "debit-" + (crypto.randomUUID ? crypto.randomUUID() : randomHex(8)), type: "removal_consumption", quantity: -orderIds.length, orderIds: [...orderIds], createdAt: now.toISOString() });
+          saveRemovalWallet(wallet);
+          orders = orders.map((order) => selectedOrderIds.has(order.id) ? { ...order, status: "Encaminhado p/ FNVJ", historico: [...order.historico, { id: "fnvj-wallet-" + randomHex(8), date: formatDateFull(now), action: "Remoção consumida do saldo TRACKen; tratativa encaminhada à FNVJ", type: "partner_init" }] } : order);
+          saveData();
+          selectedOrderIds.clear();
+          closeModal();
+          renderReputacao(document.getElementById("view-container"));
+          showToastOps(`${orderIds.length} remoção(ões) usada(s). Saldo atual: ${wallet.balance}.`);
+          return;
+        }
+        const packageSelection = getSelectedRemovalPackage();
+        if (packageSelection.quantity < orderIds.length - wallet.balance) {
+          showToastOps("O pacote precisa cobrir as remoções que faltam.");
+          return;
+        }
+        const batch = createCheckoutBatch(orderIds, packageSelection);
         orders = orders.map((order) => {
           if (selectedOrderIds.has(order.id)) {
             const updatedOrder = { ...order };
@@ -2167,7 +2300,7 @@
             updatedOrder.historico.push({
               id: "fnvj-requested-" + batch.id,
               date: formatDateFull(now),
-              action: "Solicitação criada pela TRACKen; aguardando pagamento no Mercado Pago",
+              action: `Pacote ${packageSelection.name} (${packageSelection.quantity} remoções) escolhido na TRACKen; aguardando Checkout Pro do Mercado Pago`,
               type: "partner_init",
             });
             return updatedOrder;

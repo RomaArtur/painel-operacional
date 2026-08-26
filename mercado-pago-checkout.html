@@ -28,6 +28,10 @@
       .summary-label { color: #66727a; font-size: 14px; }
       .summary-value { color: #20272c; font-weight: 800; text-align: right; }
       .quantity-value { color: #009ee3; font-size: 28px; line-height: 1; }
+      .amount { margin: 20px 0 0; padding: 18px; border-radius: 10px; background: #f7f9fa; border: 1px solid #e3e8eb; }
+      .amount small, .amount strong { display: block; }
+      .amount small { color: #66727a; margin-bottom: 4px; }
+      .amount strong { color: #20272c; font-size: 30px; }
       .split { margin-top: 20px; padding: 16px; border-radius: 10px; background: #f1f9fd; border: 1px solid #c8eafb; }
       .split-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 13px; font-weight: 700; }
       .split-bar { height: 8px; display: flex; overflow: hidden; border-radius: 999px; background: #dce5e9; }
@@ -63,11 +67,23 @@
       <section class="card">
         <div class="card-body">
           <p class="eyebrow">Solicitação TRACKen</p>
-          <h1 id="checkout-title">Revise seus acionamentos</h1>
-          <p class="muted">Confira a quantidade enviada pela TRACKen antes de simular o pagamento e liberar a tratativa da Fique no Verde Já.</p>
+          <h1 id="checkout-title">Pague seu pacote</h1>
+          <p class="muted">A seleção e o preço foram definidos na TRACKen. Aqui você apenas escolhe o meio de pagamento.</p>
           <div class="summary-row">
-            <span class="summary-label">Quantidade de acionamentos</span>
-            <strong class="summary-value quantity-value" id="checkout-quantity">0</strong>
+            <span class="summary-label">Pacote TRACKen</span>
+            <strong class="summary-value" id="checkout-package">—</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Remoções adquiridas</span>
+            <strong class="summary-value quantity-value" id="checkout-package-quantity">0</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Acionamentos deste lote</span>
+            <strong class="summary-value" id="checkout-quantity">0</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Preço unitário</span>
+            <strong class="summary-value" id="checkout-unit-price">R$ 0,00</strong>
           </div>
           <div class="summary-row">
             <span class="summary-label">Origem</span>
@@ -77,10 +93,9 @@
             <span class="summary-label">Processamento</span>
             <strong class="summary-value">Mercado Pago</strong>
           </div>
-          <div class="split">
-            <div class="split-title"><span>Split automático</span><span>Gerenciado pela TRACKen</span></div>
-            <div class="split-bar" aria-label="10% TRACKen e 90% FNVJ"><span></span><span></span></div>
-            <div class="split-legend"><span>10% TRACKen</span><span>90% FNVJ</span></div>
+          <div class="amount">
+            <small>Total da compra</small>
+            <strong id="checkout-amount">R$ 0,00</strong>
           </div>
         </div>
       </section>
@@ -100,7 +115,7 @@
           </label>
           <button class="primary" id="pay-button" type="button">Confirmar pagamento fictício</button>
           <button class="secondary" id="cancel-button" type="button">Cancelar e voltar para a TRACKen</button>
-          <p class="notice"><strong>Demonstração:</strong> nenhuma cobrança real será realizada. Ao confirmar, você retornará automaticamente à TRACKen.</p>
+          <p class="notice"><strong>Demonstração:</strong> nenhuma cobrança real será realizada. Após o pagamento, a TRACKen aguardará a confirmação segura do Mercado Pago antes de creditar e consumir as remoções.</p>
         </div>
       </section>
     </main>
@@ -116,6 +131,11 @@
         const version = params.get("version") || "";
         const source = params.get("source") || "";
         const quantity = Number(params.get("quantity"));
+        const packageCode = params.get("packageCode") || "";
+        const packageQuantity = Number(params.get("packageQuantity"));
+        const unitPrice = Number(params.get("unitPrice"));
+        const amount = Number(params.get("amount"));
+        const marketplaceFee = Number(params.get("marketplaceFee"));
         const batchId = params.get("batchId") || "";
         const state = params.get("state") || "";
         const returnUrlValue = params.get("returnUrl") || "";
@@ -127,9 +147,14 @@
           returnUrl = null;
         }
 
+        const packageRules = { flex: { name: "Flexível", min: 1, max: 49, unitPrice: 9 }, scale: { name: "Escala", min: 50, max: Infinity, unitPrice: 7 } };
+        const rule = packageRules[packageCode];
         const valid = version === "1" &&
           ["seller", "operacional"].includes(source) &&
           Number.isInteger(quantity) && quantity > 0 &&
+          rule && Number.isInteger(packageQuantity) && packageQuantity >= rule.min && packageQuantity <= rule.max &&
+          unitPrice === rule.unitPrice && amount === packageQuantity * unitPrice &&
+          marketplaceFee === Number((amount * 0.1).toFixed(2)) &&
           batchId.length >= 8 && state.length >= 16 &&
           returnUrl && returnUrl.origin === location.origin;
 
@@ -140,6 +165,10 @@
         }
 
         document.getElementById("checkout-quantity").textContent = String(quantity);
+        document.getElementById("checkout-package").textContent = rule.name;
+        document.getElementById("checkout-package-quantity").textContent = String(packageQuantity);
+        document.getElementById("checkout-unit-price").textContent = unitPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        document.getElementById("checkout-amount").textContent = amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         document.getElementById("checkout-source").textContent = source === "seller" ? "Painel Seller" : "Painel Operacional";
 
         function buildReturnUrl(result) {
@@ -149,16 +178,21 @@
           url.searchParams.set("fnvj_batch", batchId);
           url.searchParams.set("fnvj_state", state);
           url.searchParams.set("fnvj_source", source);
+          url.searchParams.set("fnvj_channel", "webhook-simulated");
+          url.searchParams.set("fnvj_payment_id", "MP-DEMO-" + batchId.slice(0, 8).toUpperCase());
           return url.href;
         }
 
         document.getElementById("pay-button").addEventListener("click", function () {
           const button = this;
           button.disabled = true;
-          button.textContent = "Processando pagamento...";
+          button.textContent = "Processando no Mercado Pago...";
+          window.setTimeout(function () {
+            button.textContent = "Pagamento aprovado • notificando a TRACKen...";
+          }, 500);
           window.setTimeout(function () {
             location.assign(buildReturnUrl("paid"));
-          }, 700);
+          }, 1200);
         });
 
         document.getElementById("cancel-button").addEventListener("click", function () {
