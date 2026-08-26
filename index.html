@@ -851,14 +851,14 @@
           >
             <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5 mr-2"></i>
             <p class="text-xs text-emerald-200">
-              O pagamento será processado e conciliado pela TRACKen. Após a
-              confirmação, a tratativa será liberada automaticamente para a FNVJ.
+              A TRACKen criará a solicitação e direcionará você ao checkout
+              fictício do Mercado Pago. A tratativa só será liberada após a confirmação.
             </p>
           </div>
           <div class="bg-gray-900 border border-gray-700 rounded-lg p-3 mb-4 text-xs">
             <div class="flex items-center justify-between text-gray-300 mb-2">
               <span>Gateway de pagamento</span>
-              <strong class="text-white">Pagar.me</strong>
+              <strong class="text-white">Mercado Pago</strong>
             </div>
             <div class="h-2 rounded-full overflow-hidden flex bg-gray-700 mb-2" aria-label="Split: 10% TRACKen e 90% FNVJ">
               <span class="bg-tracken-green" style="width: 10%"></span>
@@ -886,7 +886,7 @@
               onclick="confirmPartnerAction()"
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded shadow-sm font-medium transition flex items-center"
             >
-              <i class="fa-solid fa-shield-halved mr-2"></i> Pagar no TRACKen
+              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Ir para o Mercado Pago
             </button>
           </div>
         </div>
@@ -1071,7 +1071,7 @@
       const ACCENT_PAGE = "border-tracken-green bg-green-50 text-tracken-dark";
       const CHECKOUT_SOURCE = "operacional";
       const CHECKOUT_BATCH_KEY = "ops_reputation_checkout_batches";
-      const PAYMENT_PROVIDER = "Pagar.me";
+      const PAYMENT_PROVIDER = "Mercado Pago";
       const PAYMENT_SPLIT = { tracken: 10, fnvj: 90 };
 
       function randomHex(bytes = 16) {
@@ -1133,51 +1133,23 @@
         );
       }
 
-      function processTrackenPayment(batch) {
+      function redirectToMercadoPago(batch) {
         if (!isValidCheckoutBatch(batch)) {
-          showToastOps("Não foi possível processar o pagamento desta solicitação.");
+          showToastOps("Não foi possível abrir o checkout desta solicitação.");
           return;
         }
-        const store = loadCheckoutBatches();
-        const storedBatch = store.batches[batch.id];
-        if (!isValidCheckoutBatch(storedBatch)) {
-          showToastOps("Solicitação de pagamento não encontrada.");
-          return;
-        }
-        const now = new Date();
-        const eventId = "tracken-paid-" + storedBatch.id;
-        storedBatch.status = "paid";
-        storedBatch.result = "paid";
-        storedBatch.provider = PAYMENT_PROVIDER;
-        storedBatch.split = { ...PAYMENT_SPLIT };
-        storedBatch.processedAt = now.toISOString();
-        orders = orders.map((order) => {
-          if (
-            !storedBatch.orderIds.includes(order.id) ||
-            order.checkoutBatchId !== storedBatch.id ||
-            order.status !== STATUS_AGUARDANDO
-          ) {
-            return order;
-          }
-          const historico = order.historico.some((event) => event.id === eventId)
-            ? order.historico
-            : [
-                ...order.historico,
-                {
-                  id: eventId,
-                  date: formatDateFull(now),
-                  action: `Pagamento processado pela TRACKen via ${PAYMENT_PROVIDER}; split de 10% TRACKen e 90% FNVJ confirmado`,
-                  type: "partner_init",
-                },
-              ];
-          return { ...order, status: "Encaminhado p/ FNVJ", historico };
-        });
-        saveData();
-        saveCheckoutBatches(store);
-        if (currentView === "sac-reputacao") {
-          renderReputacao(document.getElementById("view-container"));
-        }
-        showToastOps("Pagamento processado pela TRACKen. Split 10% / 90% confirmado e tratativas encaminhadas à FNVJ.");
+        const checkoutUrl = new URL("mercado-pago-checkout.html", location.href);
+        const returnUrl = new URL(location.href);
+        ["fnvj_v", "fnvj_result", "fnvj_batch", "fnvj_state", "fnvj_source"].forEach(
+          (key) => returnUrl.searchParams.delete(key)
+        );
+        checkoutUrl.searchParams.set("version", "1");
+        checkoutUrl.searchParams.set("source", CHECKOUT_SOURCE);
+        checkoutUrl.searchParams.set("quantity", String(batch.quantity));
+        checkoutUrl.searchParams.set("batchId", batch.id);
+        checkoutUrl.searchParams.set("state", batch.state);
+        checkoutUrl.searchParams.set("returnUrl", returnUrl.href);
+        location.assign(checkoutUrl.href);
       }
 
       function retomarPagamento(batchId) {
@@ -1204,7 +1176,7 @@
         batch.result = null;
         batch.processedAt = null;
         saveCheckoutBatches(store);
-        processTrackenPayment(batch);
+        redirectToMercadoPago(batch);
       }
 
       function cleanCheckoutReturnParams() {
@@ -1236,7 +1208,7 @@
           batch.state !== state
         ) {
           cleanCheckoutReturnParams();
-          return "Retorno da FNVJ ignorado: solicitação de demonstração inválida.";
+          return "Retorno do Mercado Pago ignorado: solicitação de demonstração inválida.";
         }
 
         if (batch.result === result && batch.processedAt) {
@@ -1281,7 +1253,7 @@
           batch.processedAt = now.toISOString();
           saveCheckoutBatches(store);
           cleanCheckoutReturnParams();
-          return "Pagamento confirmado pela TRACKen. Split 10% / 90% aplicado e tratativas encaminhadas à FNVJ.";
+          return "Pagamento confirmado pelo Mercado Pago e conciliado pela TRACKen. Split 10% / 90% aplicado e tratativas encaminhadas à FNVJ.";
         }
 
         batch.status = result;
@@ -1934,8 +1906,8 @@
             <div class="space-y-4 text-sm text-gray-600 leading-relaxed">
               <p>A tela lista pedidos do <strong>Mercado Livre</strong> em <strong>atraso</strong> cuja reputação foi afetada — identificados pela API do ML. Nem todo atraso gera perda de reputação: só aparecem aqui os que o marketplace sinalizou. Reclamações e denúncias ficam para uma etapa posterior.</p>
               <p>Você seleciona as vendas e aciona a <strong>Fique no Verde Já</strong>, que assume o contato com o cliente e devolve o andamento para o TRACKen.</p>
-              <p>O pagamento acontece dentro da <strong>TRACKen</strong>, com processamento proposto via <strong>Pagar.me</strong>. A TRACKen controla a confirmação, a conciliação e a liberação do serviço.</p>
-              <p>O valor é dividido automaticamente em <strong>10% para a TRACKen</strong> e <strong>90% para a FNVJ</strong>. Após a confirmação, a tratativa é liberada para o parceiro sem redirecionar o seller.</p>
+              <p>A TRACKen cria a solicitação e direciona você ao <strong>checkout fictício do Mercado Pago</strong>, que exibe a quantidade de acionamentos e permite simular o pagamento.</p>
+              <p>Após a confirmação, você retorna à TRACKen, o split de <strong>10% para a TRACKen</strong> e <strong>90% para a FNVJ</strong> é registrado e a tratativa é liberada para o parceiro.</p>
             </div>
             <button type="button" onclick="acessarReputacao()" class="mt-6 w-full sm:w-auto ${ACCENT_BTN} text-white font-semibold px-5 py-2.5 rounded-xl text-sm">
               Acessar controle de reputação
@@ -2195,7 +2167,7 @@
             updatedOrder.historico.push({
               id: "fnvj-requested-" + batch.id,
               date: formatDateFull(now),
-              action: "Solicitação criada; pagamento iniciado e retido pela TRACKen",
+              action: "Solicitação criada pela TRACKen; aguardando pagamento no Mercado Pago",
               type: "partner_init",
             });
             return updatedOrder;
@@ -2205,7 +2177,7 @@
         saveData();
         selectedOrderIds.clear();
         closeModal();
-        processTrackenPayment(batch);
+        redirectToMercadoPago(batch);
       }
 
       // --- Ações comuns (menu, drawer, etc.) ---
@@ -2297,7 +2269,7 @@
         if (order.status === STATUS_AGUARDANDO && order.checkoutBatchId) {
           footer.innerHTML = `
                     <button onclick="retomarPagamento('${order.checkoutBatchId}')" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded shadow-sm font-medium transition flex items-center justify-center">
-                        <i class="fa-solid fa-arrow-rotate-right mr-2"></i> Retomar pagamento no TRACKen
+                        <i class="fa-solid fa-arrow-rotate-right mr-2"></i> Retomar pagamento no Mercado Pago
                     </button>
                     <p class="text-center text-[10px] text-gray-400 mt-2">Ambiente de demonstração, sem cobrança real.</p>
                 `;

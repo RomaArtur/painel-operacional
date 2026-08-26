@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-BR" class="prototype-auth-pending">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mercado Pago | Checkout de demonstração</title>
+    <script src="prototype-access.js"></script>
+    <style>
+      :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: #f5f5f5; color: #263238; }
+      button { font: inherit; }
+      .topbar { background: #ffe600; border-bottom: 1px solid #e6d000; }
+      .topbar-inner { width: min(100% - 32px, 1040px); height: 72px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .brand { display: flex; align-items: center; gap: 12px; color: #2d3277; font-size: 20px; font-weight: 800; }
+      .brand-mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: #009ee3; font-size: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.16); }
+      .demo-tag { border: 1px solid rgba(45,50,119,.35); border-radius: 999px; padding: 6px 10px; color: #2d3277; font-size: 12px; font-weight: 700; }
+      .layout { width: min(100% - 32px, 960px); margin: 48px auto; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 18px rgba(28,39,49,.08); overflow: hidden; }
+      .card-body { padding: 28px; }
+      .eyebrow { margin: 0 0 8px; color: #009ee3; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      h1, h2, p { margin-top: 0; }
+      h1 { margin-bottom: 10px; font-size: clamp(26px, 4vw, 36px); line-height: 1.12; }
+      h2 { margin-bottom: 20px; font-size: 20px; }
+      .muted { color: #66727a; line-height: 1.6; }
+      .summary-row { display: flex; justify-content: space-between; gap: 20px; padding: 16px 0; border-bottom: 1px solid #edf0f2; }
+      .summary-row:last-child { border-bottom: 0; }
+      .summary-label { color: #66727a; font-size: 14px; }
+      .summary-value { color: #20272c; font-weight: 800; text-align: right; }
+      .quantity-value { color: #009ee3; font-size: 28px; line-height: 1; }
+      .split { margin-top: 20px; padding: 16px; border-radius: 10px; background: #f1f9fd; border: 1px solid #c8eafb; }
+      .split-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+      .split-bar { height: 8px; display: flex; overflow: hidden; border-radius: 999px; background: #dce5e9; }
+      .split-bar span:first-child { width: 10%; background: #009ee3; }
+      .split-bar span:last-child { width: 90%; background: #2d3277; }
+      .split-legend { display: flex; justify-content: space-between; margin-top: 8px; color: #526069; font-size: 12px; }
+      .method { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; margin-bottom: 12px; padding: 14px 16px; border: 1px solid #d6dde1; border-radius: 10px; background: #fff; cursor: pointer; text-align: left; }
+      .method:has(input:checked) { border-color: #009ee3; box-shadow: 0 0 0 2px rgba(0,158,227,.12); }
+      .method input { accent-color: #009ee3; }
+      .method-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; background: #eef8fc; color: #007eb5; font-weight: 900; }
+      .method-copy strong, .method-copy span { display: block; }
+      .method-copy span { margin-top: 3px; color: #78858d; font-size: 12px; }
+      .primary { width: 100%; min-height: 52px; margin-top: 10px; border: 0; border-radius: 8px; background: #009ee3; color: #fff; font-weight: 800; cursor: pointer; }
+      .primary:hover { background: #008dca; }
+      .primary:disabled { opacity: .65; cursor: wait; }
+      .secondary { width: 100%; min-height: 44px; margin-top: 8px; border: 0; background: transparent; color: #007eb5; font-weight: 700; cursor: pointer; }
+      .notice { margin: 20px 0 0; padding: 12px 14px; border-radius: 8px; background: #fff8d8; color: #6f6100; font-size: 12px; line-height: 1.5; }
+      .invalid { display: none; width: min(100% - 32px, 560px); margin: 72px auto; padding: 32px; border-radius: 12px; background: #fff; text-align: center; box-shadow: 0 4px 18px rgba(28,39,49,.08); }
+      .invalid.active { display: block; }
+      body.invalid-state .layout { display: none; }
+      @media (max-width: 760px) { .layout { grid-template-columns: 1fr; margin: 24px auto; } .card-body { padding: 22px; } .topbar-inner { height: 64px; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand"><span class="brand-mark">MP</span><span>Mercado Pago</span></div>
+        <span class="demo-tag">Ambiente fictício</span>
+      </div>
+    </header>
+
+    <main class="layout" aria-labelledby="checkout-title">
+      <section class="card">
+        <div class="card-body">
+          <p class="eyebrow">Solicitação TRACKen</p>
+          <h1 id="checkout-title">Revise seus acionamentos</h1>
+          <p class="muted">Confira a quantidade enviada pela TRACKen antes de simular o pagamento e liberar a tratativa da Fique no Verde Já.</p>
+          <div class="summary-row">
+            <span class="summary-label">Quantidade de acionamentos</span>
+            <strong class="summary-value quantity-value" id="checkout-quantity">0</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Origem</span>
+            <strong class="summary-value" id="checkout-source">TRACKen</strong>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Processamento</span>
+            <strong class="summary-value">Mercado Pago</strong>
+          </div>
+          <div class="split">
+            <div class="split-title"><span>Split automático</span><span>Gerenciado pela TRACKen</span></div>
+            <div class="split-bar" aria-label="10% TRACKen e 90% FNVJ"><span></span><span></span></div>
+            <div class="split-legend"><span>10% TRACKen</span><span>90% FNVJ</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-body">
+          <h2>Como você quer pagar?</h2>
+          <label class="method">
+            <input type="radio" name="payment-method" value="pix" checked />
+            <span class="method-icon">PIX</span>
+            <span class="method-copy"><strong>Pix</strong><span>Aprovação imediata na demonstração</span></span>
+          </label>
+          <label class="method">
+            <input type="radio" name="payment-method" value="card" />
+            <span class="method-icon">••••</span>
+            <span class="method-copy"><strong>Cartão de crédito</strong><span>Pagamento fictício em uma parcela</span></span>
+          </label>
+          <button class="primary" id="pay-button" type="button">Confirmar pagamento fictício</button>
+          <button class="secondary" id="cancel-button" type="button">Cancelar e voltar para a TRACKen</button>
+          <p class="notice"><strong>Demonstração:</strong> nenhuma cobrança real será realizada. Ao confirmar, você retornará automaticamente à TRACKen.</p>
+        </div>
+      </section>
+    </main>
+
+    <section class="invalid" id="invalid-checkout" role="alert">
+      <h1>Checkout indisponível</h1>
+      <p class="muted">Os dados desta solicitação são inválidos ou estão incompletos. Volte à TRACKen e inicie o pagamento novamente.</p>
+    </section>
+
+    <script>
+      (function () {
+        const params = new URLSearchParams(location.search);
+        const version = params.get("version") || "";
+        const source = params.get("source") || "";
+        const quantity = Number(params.get("quantity"));
+        const batchId = params.get("batchId") || "";
+        const state = params.get("state") || "";
+        const returnUrlValue = params.get("returnUrl") || "";
+        let returnUrl;
+
+        try {
+          returnUrl = new URL(returnUrlValue, location.href);
+        } catch (error) {
+          returnUrl = null;
+        }
+
+        const valid = version === "1" &&
+          ["seller", "operacional"].includes(source) &&
+          Number.isInteger(quantity) && quantity > 0 &&
+          batchId.length >= 8 && state.length >= 16 &&
+          returnUrl && returnUrl.origin === location.origin;
+
+        if (!valid) {
+          document.body.classList.add("invalid-state");
+          document.getElementById("invalid-checkout").classList.add("active");
+          return;
+        }
+
+        document.getElementById("checkout-quantity").textContent = String(quantity);
+        document.getElementById("checkout-source").textContent = source === "seller" ? "Painel Seller" : "Painel Operacional";
+
+        function buildReturnUrl(result) {
+          const url = new URL(returnUrl.href);
+          url.searchParams.set("fnvj_v", "1");
+          url.searchParams.set("fnvj_result", result);
+          url.searchParams.set("fnvj_batch", batchId);
+          url.searchParams.set("fnvj_state", state);
+          url.searchParams.set("fnvj_source", source);
+          return url.href;
+        }
+
+        document.getElementById("pay-button").addEventListener("click", function () {
+          const button = this;
+          button.disabled = true;
+          button.textContent = "Processando pagamento...";
+          window.setTimeout(function () {
+            location.assign(buildReturnUrl("paid"));
+          }, 700);
+        });
+
+        document.getElementById("cancel-button").addEventListener("click", function () {
+          location.assign(buildReturnUrl("cancelled"));
+        });
+      })();
+    </script>
+  </body>
+</html>
