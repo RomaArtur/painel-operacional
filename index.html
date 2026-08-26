@@ -819,7 +819,7 @@
           class="bg-gray-900 px-6 py-4 border-b border-gray-700 flex justify-between items-center"
         >
           <h3 class="text-lg font-semibold text-white flex items-center">
-            <i class="fa-solid fa-wallet text-emerald-400 mr-2"></i> Remoções e acionamento
+            <i id="modal-header-icon" class="fa-solid fa-wallet text-emerald-400 mr-2"></i> <span id="modal-header-title">Remoções e acionamento</span>
           </h3>
           <button
             onclick="closeModal()"
@@ -829,25 +829,36 @@
           </button>
         </div>
         <div class="p-6">
-          <div class="flex justify-center mb-4">
-            <img
-              src="imgi_1_logolinhafqnvj.png"
-              alt="Fique no Verde Já"
-              class="logo-fnvj"
-              onerror="
-                this.outerHTML =
-                  '<div class=\'text-2xl font-bold text-emerald-400\'>Fique no <span class=\'text-white\'>Verde Já</span></div>'
-              "
-            />
+          <div id="modal-trigger-context">
+            <div class="flex justify-center mb-4">
+              <img
+                src="imgi_1_logolinhafqnvj.png"
+                alt="Fique no Verde Já"
+                class="logo-fnvj"
+                onerror="
+                  this.outerHTML =
+                    '<div class=\'text-2xl font-bold text-emerald-400\'>Fique no <span class=\'text-white\'>Verde Já</span></div>'
+                "
+              />
+            </div>
+            <p class="text-gray-300 mb-4 text-center text-sm">
+              Cada acionamento consome <strong class="text-white">1 remoção</strong>. Você selecionou
+              <strong id="modal-count" class="text-white">0</strong> venda(s).
+            </p>
+            <div id="modal-insufficient-banner" class="hidden bg-amber-900/30 border border-amber-600 rounded-xl p-4 mb-4 text-sm text-amber-100">
+              <i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2"></i>Saldo insuficiente para acionar todos os pedidos selecionados. Complete a compra abaixo para continuar automaticamente.
+            </div>
           </div>
-          <p class="text-gray-300 mb-4 text-center text-sm">
-            Cada acionamento consome <strong class="text-white">1 remoção</strong>. Você selecionou
-            <strong id="modal-count" class="text-white">0</strong> venda(s).
-          </p>
-          <div class="grid grid-cols-3 gap-3 mb-5" aria-label="Resumo de remoções">
+          <div id="modal-topup-context" class="hidden">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0"><i class="fa-solid fa-wallet"></i></div>
+              <p class="text-gray-300 text-sm">Compre remoções para usar quando quiser acionar a <strong class="text-white">Fique no Verde Já</strong>. Elas ficam disponíveis na carteira deste painel até serem usadas.</p>
+            </div>
+          </div>
+          <div id="modal-stats-grid" class="grid grid-cols-3 gap-3 mb-5" aria-label="Resumo de remoções">
             <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">Saldo atual</div><div class="text-xl font-bold text-white"><span id="modal-wallet-balance">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
-            <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">Necessárias</div><div class="text-xl font-bold text-white"><span id="modal-required-removals">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
-            <div class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">A comprar</div><div class="text-xl font-bold text-emerald-400"><span id="modal-shortage">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
+            <div id="modal-required-box" class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">Necessárias</div><div class="text-xl font-bold text-white"><span id="modal-required-removals">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
+            <div id="modal-shortage-box" class="bg-gray-900 border border-gray-700 rounded-xl p-3"><div class="text-[11px] uppercase tracking-wide text-gray-500">A comprar</div><div class="text-xl font-bold text-emerald-400"><span id="modal-shortage">0</span> <span class="text-xs font-normal text-gray-400">remoções</span></div></div>
           </div>
           <div id="modal-package-section" class="mb-5">
             <div class="flex items-end justify-between gap-3 mb-3"><div><h4 class="text-white font-semibold">Escolha o pacote na TRACKen</h4><p class="text-xs text-gray-400">O Mercado Pago receberá somente a cobrança já preparada.</p></div><span id="modal-package-recommendation" class="text-[11px] font-bold text-emerald-300 bg-emerald-900/40 border border-emerald-700 rounded-full px-2.5 py-1">Recomendado</span></div>
@@ -1060,6 +1071,8 @@
       const INTRO_KEY = "ops_reputacao_intro";
       const STATUS_AFETADA = "Reputação afetada";
       const STATUS_AGUARDANDO = "Aguardando pagamento";
+      const STATUS_RECUSADO = "Recusado pela FNVJ";
+      const REFUND_WINDOW_DAYS = 7;
       const PARTY_COL = "Cliente";
       const ACCENT_BTN = "bg-tracken-green hover:bg-green-600";
       const ACCENT_FOCUS = "focus:border-tracken-green";
@@ -1074,19 +1087,71 @@
         scale: { code: "scale", name: "Escala", min: 50, max: null, unitPrice: 7 },
       };
       let selectedRemovalPackage = "flex";
+      let walletTopUpMode = false;
 
       function loadRemovalWallet() {
         try {
           const parsed = JSON.parse(localStorage.getItem(REMOVAL_WALLET_KEY) || "{}");
           if (parsed.version === 1 && Number.isInteger(parsed.balance) && parsed.balance >= 0) {
-            return { version: 1, balance: parsed.balance, transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [] };
+            return {
+              version: 1,
+              balance: parsed.balance,
+              transactions: Array.isArray(parsed.transactions) ? parsed.transactions : [],
+              lots: Array.isArray(parsed.lots) ? parsed.lots : [],
+            };
           }
         } catch (error) {}
-        return { version: 1, balance: 0, transactions: [] };
+        return { version: 1, balance: 0, transactions: [], lots: [] };
       }
 
       function saveRemovalWallet(wallet) {
         localStorage.setItem(REMOVAL_WALLET_KEY, JSON.stringify(wallet));
+      }
+
+      // Cada compra de pacote vira um "lote" com prazo próprio de arrependimento (7 dias)
+      // e saldo remanescente próprio, para sabermos quanto ainda não foi usado daquela compra.
+      function addPurchaseLot(wallet, batch) {
+        wallet.lots.push({
+          id: batch.id,
+          purchasedAt: new Date().toISOString(),
+          packageCode: batch.package.code,
+          packageName: batch.package.name,
+          quantity: batch.package.quantity,
+          unitPrice: batch.package.unitPrice,
+          total: batch.package.total,
+          remaining: batch.package.quantity,
+          refundedQuantity: 0,
+          refundedAmount: 0,
+          refundedAt: null,
+        });
+      }
+
+      // Consome remoções dos lotes mais antigos primeiro (FIFO), só para sabermos quanto
+      // sobra de cada compra — não afeta o saldo total, que é controlado à parte.
+      function consumeFromLots(wallet, quantity) {
+        let remainingToConsume = quantity;
+        const sortedLots = [...wallet.lots].sort((a, b) => new Date(a.purchasedAt) - new Date(b.purchasedAt));
+        for (const lot of sortedLots) {
+          if (remainingToConsume <= 0) break;
+          if (lot.remaining <= 0) continue;
+          const used = Math.min(lot.remaining, remainingToConsume);
+          lot.remaining -= used;
+          remainingToConsume -= used;
+        }
+      }
+
+      function isLotRefundable(lot) {
+        if (lot.remaining <= 0) return false;
+        const purchasedAt = new Date(lot.purchasedAt);
+        const deadline = new Date(purchasedAt);
+        deadline.setDate(deadline.getDate() + REFUND_WINDOW_DAYS);
+        return new Date() <= deadline;
+      }
+
+      function lotRefundDeadline(lot) {
+        const deadline = new Date(lot.purchasedAt);
+        deadline.setDate(deadline.getDate() + REFUND_WINDOW_DAYS);
+        return deadline;
       }
 
       function formatCurrency(value) {
@@ -1125,6 +1190,7 @@
           id,
           state: randomHex(24),
           source: CHECKOUT_SOURCE,
+          type: orderIds.length ? "trigger" : "topup",
           quantity: orderIds.length,
           orderIds: [...orderIds],
           package: { ...packageSelection },
@@ -1147,9 +1213,10 @@
           typeof batch.state === "string" &&
           batch.source === CHECKOUT_SOURCE &&
           Number.isInteger(batch.quantity) &&
-          batch.quantity > 0 &&
+          batch.quantity >= 0 &&
           Array.isArray(batch.orderIds) &&
           batch.orderIds.length === batch.quantity &&
+          (batch.type === "topup" ? batch.quantity === 0 : batch.quantity > 0) &&
           batch.package &&
           REMOVAL_PACKAGES[batch.package.code] &&
           Number.isInteger(batch.package.quantity) &&
@@ -1260,12 +1327,16 @@
           }
           wallet.balance += batch.package.quantity;
           wallet.transactions.push({ id: "credit-" + batch.id, batchId: batch.id, type: "package_credit", quantity: batch.package.quantity, amount: batch.package.total, channel: "webhook_simulated", createdAt: now.toISOString() });
-          if (wallet.balance < batch.quantity) {
-            cleanCheckoutReturnParams();
-            return "Pagamento confirmado, mas o saldo de remoções não cobre os acionamentos. A conciliação foi pausada.";
+          addPurchaseLot(wallet, batch);
+          if (batch.quantity > 0) {
+            if (wallet.balance < batch.quantity) {
+              cleanCheckoutReturnParams();
+              return "Pagamento confirmado, mas o saldo de remoções não cobre os acionamentos. A conciliação foi pausada.";
+            }
+            wallet.balance -= batch.quantity;
+            consumeFromLots(wallet, batch.quantity);
+            wallet.transactions.push({ id: "debit-" + batch.id, batchId: batch.id, type: "removal_consumption", quantity: -batch.quantity, orderIds: [...batch.orderIds], createdAt: now.toISOString() });
           }
-          wallet.balance -= batch.quantity;
-          wallet.transactions.push({ id: "debit-" + batch.id, batchId: batch.id, type: "removal_consumption", quantity: -batch.quantity, orderIds: [...batch.orderIds], createdAt: now.toISOString() });
           saveRemovalWallet(wallet);
           const orderIds = new Set(batch.orderIds);
           orders = orders.map((order) => {
@@ -1301,7 +1372,9 @@
           batch.processedAt = now.toISOString();
           saveCheckoutBatches(store);
           cleanCheckoutReturnParams();
-          return `Pagamento confirmado por webhook simulado. ${batch.quantity} remoção(ões) usada(s), ${wallet.balance} restante(s) e tratativas encaminhadas à FNVJ.`;
+          return batch.quantity > 0
+            ? `Pagamento confirmado por webhook simulado. ${batch.quantity} remoção(ões) usada(s), ${wallet.balance} restante(s) e tratativas encaminhadas à FNVJ.`
+            : `Pagamento confirmado por webhook simulado. ${batch.package.quantity} remoção(ões) creditada(s) na carteira. Saldo atual: ${wallet.balance} disponível(is).`;
         }
 
         batch.status = result;
@@ -1806,6 +1879,8 @@
             return "bg-amber-100 text-amber-800 border-amber-200";
           case "Encaminhado p/ FNVJ":
             return "bg-blue-100 text-blue-700 border-blue-200";
+          case STATUS_RECUSADO:
+            return "bg-rose-100 text-rose-700 border-rose-200";
           case "Resolvido":
             return "bg-green-100 text-green-700 border-green-200";
           default:
@@ -2011,7 +2086,11 @@
         container.innerHTML = header + `
           <div class="mb-4 rounded-2xl bg-gradient-to-r from-gray-950 to-gray-800 border border-gray-700 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-seller">
             <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-wallet"></i></div><div><div class="text-xs text-gray-400">Carteira de remoções</div><div class="text-xl font-bold">${removalBalance} disponível(is)</div><div class="text-[11px] text-gray-400">1 acionamento = 1 remoção • saldo exclusivo deste painel</div></div></div>
-            <div class="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Pagamento confirmado por webhook</div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="text-xs text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2"><i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> Pagamento confirmado por webhook</div>
+              <button type="button" onclick="renderCarteiraExtrato()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center whitespace-nowrap"><i class="fa-solid fa-receipt mr-2"></i>Ver extrato</button>
+              <button type="button" onclick="openWalletTopUpModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors flex items-center whitespace-nowrap"><i class="fa-solid fa-cart-plus mr-2"></i>Comprar remoções</button>
+            </div>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
@@ -2043,6 +2122,7 @@
                 <option value="${STATUS_AFETADA}">${STATUS_AFETADA}</option>
                 <option value="${STATUS_AGUARDANDO}">${STATUS_AGUARDANDO}</option>
                 <option value="Encaminhado p/ FNVJ">Encaminhado p/ FNVJ</option>
+                <option value="${STATUS_RECUSADO}">${STATUS_RECUSADO}</option>
                 <option value="Em atendimento">Em atendimento</option>
                 <option value="Cliente contatado">Cliente contatado</option>
                 <option value="Tratativa concluída">Tratativa concluída</option>
@@ -2090,6 +2170,123 @@
           </div>
         `;
         renderTableRowsReputacao();
+      }
+
+      // ============================================================
+      // EXTRATO DA CARTEIRA (compras de pacote + arrependimento 7 dias)
+      // ============================================================
+      function renderCarteiraExtrato() {
+        const container = document.getElementById("view-container");
+        if (!container) return;
+        const wallet = loadRemovalWallet();
+        const lots = [...wallet.lots].sort((a, b) => new Date(b.purchasedAt) - new Date(a.purchasedAt));
+
+        const rows = lots.length
+          ? lots.map((lot) => {
+              const used = lot.quantity - lot.remaining - lot.refundedQuantity;
+              const refundable = isLotRefundable(lot);
+              const deadline = lotRefundDeadline(lot);
+              let statusBadge = "";
+              if (lot.refundedQuantity > 0) {
+                statusBadge = `<span class="px-2 py-1 text-[11px] rounded-md border bg-rose-50 text-rose-700 border-rose-200 font-medium">Estornado (${formatCurrency(lot.refundedAmount)})</span>`;
+              } else if (refundable) {
+                statusBadge = `<span class="px-2 py-1 text-[11px] rounded-md border bg-emerald-50 text-emerald-700 border-emerald-200 font-medium">Estorno disponível até ${formatDate(deadline)}</span>`;
+              } else if (lot.remaining > 0) {
+                statusBadge = `<span class="px-2 py-1 text-[11px] rounded-md border bg-gray-100 text-gray-500 border-gray-200 font-medium">Fora do prazo de arrependimento</span>`;
+              } else {
+                statusBadge = `<span class="px-2 py-1 text-[11px] rounded-md border bg-gray-100 text-gray-500 border-gray-200 font-medium">Totalmente usado</span>`;
+              }
+              return `
+                <tr class="border-b border-gray-100">
+                  <td class="p-3 text-gray-600">${formatDate(new Date(lot.purchasedAt))}</td>
+                  <td class="p-3 font-medium text-gray-800">${lot.packageName}</td>
+                  <td class="p-3 text-gray-600">${lot.quantity} un. · ${formatCurrency(lot.unitPrice)}/un.</td>
+                  <td class="p-3 text-gray-600">${formatCurrency(lot.total)}</td>
+                  <td class="p-3 text-gray-600">${used} usada(s)</td>
+                  <td class="p-3 text-gray-600">${lot.remaining} disponível(is)</td>
+                  <td class="p-3">${statusBadge}</td>
+                  <td class="p-3 text-center">${refundable ? `<button onclick="solicitarEstornoLote('${lot.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold border border-rose-200 hover:bg-rose-50 rounded px-2.5 py-1.5 whitespace-nowrap">Solicitar estorno</button>` : ""}</td>
+                </tr>
+              `;
+            }).join("")
+          : `<tr><td colspan="8" class="p-6 text-center text-gray-400">Nenhuma compra de pacote registrada ainda.</td></tr>`;
+
+        container.innerHTML = `
+          <div class="mb-6">
+            <div class="text-xs text-gray-500 mb-1 flex items-center space-x-1.5">
+              <span>Ferramentas</span>
+              <i class="fa-solid fa-chevron-right text-[9px] text-gray-400"></i>
+              <a href="#" onclick="renderReputacao(document.getElementById('view-container')); return false;" class="hover:text-gray-700">Controle de reputação</a>
+              <i class="fa-solid fa-chevron-right text-[9px] text-gray-400"></i>
+              <span class="text-gray-800 font-medium">Extrato da carteira</span>
+            </div>
+            <div class="flex justify-between items-start flex-wrap gap-3">
+              <div>
+                <h1 class="text-xl lg:text-2xl font-bold text-gray-900 tracking-tight flex items-center">
+                  <i class="fa-solid fa-receipt text-emerald-600 mr-2"></i>
+                  Extrato da carteira de remoções
+                </h1>
+                <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
+                  Compras de pacote, quanto já foi usado e a janela de ${REFUND_WINDOW_DAYS} dias para arrependimento da parte não usada.
+                </p>
+              </div>
+              <button type="button" onclick="renderReputacao(document.getElementById('view-container'))" class="text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg px-3 py-2 flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para pedidos
+              </button>
+            </div>
+          </div>
+          <div class="mb-4 rounded-2xl bg-gradient-to-r from-gray-950 to-gray-800 border border-gray-700 text-white p-4 flex items-center gap-3 shadow-seller">
+            <div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-wallet"></i></div>
+            <div><div class="text-xs text-gray-400">Saldo atual</div><div class="text-xl font-bold">${wallet.balance} disponível(is)</div></div>
+          </div>
+          <div class="bg-white rounded shadow-seller overflow-hidden border border-gray-200">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead><tr class="table-header-dark text-xs tracking-wider">
+                  <th class="p-3 font-medium">COMPRA</th>
+                  <th class="p-3 font-medium">PACOTE</th>
+                  <th class="p-3 font-medium">QUANTIDADE</th>
+                  <th class="p-3 font-medium">TOTAL PAGO</th>
+                  <th class="p-3 font-medium">USO</th>
+                  <th class="p-3 font-medium">SALDO DO LOTE</th>
+                  <th class="p-3 font-medium">ARREPENDIMENTO</th>
+                  <th class="p-3 font-medium w-12 text-center">AÇÃO</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-3">O estorno por arrependimento devolve em dinheiro apenas as remoções ainda não usadas dessa compra, dentro de ${REFUND_WINDOW_DAYS} dias corridos da confirmação do pagamento. Remoções já usadas em acionamentos não entram nesse estorno — nesses casos, o único jeito de recuperar o crédito é a FNVJ recusar o caso antes de iniciar o atendimento.</p>
+        `;
+      }
+
+      function solicitarEstornoLote(lotId) {
+        const wallet = loadRemovalWallet();
+        const lot = wallet.lots.find((l) => l.id === lotId);
+        if (!lot || !isLotRefundable(lot)) {
+          showToastOps("Este lote não está mais elegível para estorno.");
+          renderCarteiraExtrato();
+          return;
+        }
+        const refundQty = lot.remaining;
+        const refundAmount = Number((refundQty * lot.unitPrice).toFixed(2));
+        wallet.balance = Math.max(0, wallet.balance - refundQty);
+        lot.refundedQuantity = refundQty;
+        lot.refundedAmount = refundAmount;
+        lot.refundedAt = new Date().toISOString();
+        lot.remaining = 0;
+        wallet.transactions.push({
+          id: "cashrefund-" + randomHex(8),
+          batchId: lot.id,
+          type: "cash_refund",
+          quantity: -refundQty,
+          amount: -refundAmount,
+          reason: "arrependimento_7_dias",
+          createdAt: new Date().toISOString(),
+        });
+        saveRemovalWallet(wallet);
+        showToastOps(`Estorno solicitado: ${formatCurrency(refundAmount)} (${refundQty} remoção(ões) não usada(s)).`);
+        renderCarteiraExtrato();
       }
 
       function renderTableRowsReputacao() {
@@ -2188,6 +2385,7 @@
 
       // --- Ações do modal de acionamento (reutilizadas para reputação) ---
       function getRemovalShortage() {
+        if (walletTopUpMode) return 0;
         return Math.max(0, selectedOrderIds.size - loadRemovalWallet().balance);
       }
 
@@ -2226,15 +2424,27 @@
 
       function syncRemovalModal() {
         const wallet = loadRemovalWallet();
+        document.getElementById("modal-wallet-balance").textContent = String(wallet.balance);
+        if (walletTopUpMode) {
+          document.getElementById("modal-package-section").classList.remove("hidden");
+          document.getElementById("modal-payment-summary").classList.remove("hidden");
+          document.getElementById("modal-wallet-ready").classList.add("hidden");
+          document.getElementById("modal-insufficient-banner").classList.add("hidden");
+          document.getElementById("partner-action-submit-label").textContent = "Continuar para o Mercado Pago";
+          const topUpIcon = document.querySelector("#partner-action-submit i");
+          if (topUpIcon) topUpIcon.className = "fa-solid fa-arrow-up-right-from-square mr-2";
+          updateRemovalPackageSummary(selectedRemovalPackage);
+          return;
+        }
         const required = selectedOrderIds.size;
         const shortage = Math.max(0, required - wallet.balance);
-        document.getElementById("modal-wallet-balance").textContent = String(wallet.balance);
         document.getElementById("modal-required-removals").textContent = String(required);
         document.getElementById("modal-shortage").textContent = String(shortage);
         const needsPayment = shortage > 0;
         document.getElementById("modal-package-section").classList.toggle("hidden", !needsPayment);
         document.getElementById("modal-payment-summary").classList.toggle("hidden", !needsPayment);
         document.getElementById("modal-wallet-ready").classList.toggle("hidden", needsPayment);
+        document.getElementById("modal-insufficient-banner").classList.toggle("hidden", !needsPayment);
         document.getElementById("partner-action-submit-label").textContent = needsPayment ? "Continuar para o Mercado Pago" : "Usar saldo e acionar FNVJ";
         const icon = document.querySelector("#partner-action-submit i");
         if (icon) icon.className = needsPayment ? "fa-solid fa-arrow-up-right-from-square mr-2" : "fa-solid fa-bolt mr-2";
@@ -2247,8 +2457,30 @@
         updateRemovalPackageSummary(selectedRemovalPackage);
       }
 
+      function openWalletTopUpModal() {
+        walletTopUpMode = true;
+        document.getElementById("modal-header-title").textContent = "Comprar remoções";
+        document.getElementById("modal-header-icon").className = "fa-solid fa-cart-plus text-emerald-400 mr-2";
+        document.getElementById("modal-trigger-context").classList.add("hidden");
+        document.getElementById("modal-topup-context").classList.remove("hidden");
+        document.getElementById("modal-order-list").classList.add("hidden");
+        document.getElementById("modal-required-box").classList.add("hidden");
+        document.getElementById("modal-shortage-box").classList.add("hidden");
+        document.getElementById("modal-stats-grid").classList.remove("grid-cols-3");
+        document.getElementById("modal-stats-grid").classList.add("grid-cols-1");
+        selectedRemovalPackage = "flex";
+        document.getElementById("package-flex-quantity").value = "1";
+        document.getElementById("package-scale-quantity").value = "50";
+        const flexCard = document.getElementById("package-flex-card");
+        flexCard.removeAttribute("aria-disabled");
+        flexCard.classList.remove("opacity-40", "cursor-not-allowed");
+        syncRemovalModal();
+        document.getElementById("action-modal").classList.add("active");
+      }
+
       function openActionModalReputacao() {
         if (selectedOrderIds.size === 0) return;
+        walletTopUpMode = false;
         const count = selectedOrderIds.size;
         document.getElementById("modal-count").innerText = count;
         const listContainer = document.getElementById("modal-order-list");
@@ -2267,15 +2499,35 @@
 
       function closeModal() {
         document.getElementById("action-modal").classList.remove("active");
+        if (walletTopUpMode) {
+          walletTopUpMode = false;
+          document.getElementById("modal-header-title").textContent = "Remoções e acionamento";
+          document.getElementById("modal-header-icon").className = "fa-solid fa-wallet text-emerald-400 mr-2";
+          document.getElementById("modal-trigger-context").classList.remove("hidden");
+          document.getElementById("modal-topup-context").classList.add("hidden");
+          document.getElementById("modal-order-list").classList.remove("hidden");
+          document.getElementById("modal-required-box").classList.remove("hidden");
+          document.getElementById("modal-shortage-box").classList.remove("hidden");
+          document.getElementById("modal-stats-grid").classList.add("grid-cols-3");
+          document.getElementById("modal-stats-grid").classList.remove("grid-cols-1");
+        }
       }
 
       function confirmPartnerAction() {
+        if (walletTopUpMode) {
+          const packageSelection = getSelectedRemovalPackage();
+          const batch = createCheckoutBatch([], packageSelection);
+          closeModal();
+          redirectToMercadoPago(batch);
+          return;
+        }
         const orderIds = Array.from(selectedOrderIds);
         if (!orderIds.length) return;
         const wallet = loadRemovalWallet();
         const now = new Date();
         if (wallet.balance >= orderIds.length) {
           wallet.balance -= orderIds.length;
+          consumeFromLots(wallet, orderIds.length);
           wallet.transactions.push({ id: "debit-" + (crypto.randomUUID ? crypto.randomUUID() : randomHex(8)), type: "removal_consumption", quantity: -orderIds.length, orderIds: [...orderIds], createdAt: now.toISOString() });
           saveRemovalWallet(wallet);
           orders = orders.map((order) => selectedOrderIds.has(order.id) ? { ...order, status: "Encaminhado p/ FNVJ", historico: [...order.historico, { id: "fnvj-wallet-" + randomHex(8), date: formatDateFull(now), action: "Remoção consumida do saldo TRACKen; tratativa encaminhada à FNVJ", type: "partner_init" }] } : order);
@@ -2409,6 +2661,7 @@
           footer.style.display = "block";
         } else if (currentIndex > 1 && currentIndex < STATUS_FLOW.length - 1) {
           const nextStatus = STATUS_FLOW[currentIndex + 1];
+          const showRecusa = order.status === "Encaminhado p/ FNVJ";
           footer.innerHTML = `
                     <div class="space-y-2">
                         <a href="https://wa.me/5511999999999" target="_blank" class="w-full py-2.5 bg-[#25D366] hover:bg-[#1ebe5c] text-white rounded shadow-sm font-medium transition flex items-center justify-center">
@@ -2417,6 +2670,10 @@
                         <button onclick="simularAvanco()" class="w-full py-2.5 bg-white border-2 border-fnvj-green text-fnvj-dark hover:bg-emerald-50 rounded shadow-sm font-medium transition flex items-center justify-center">
                             <i class="fa-solid fa-forward-step mr-2 text-fnvj-green"></i> Simular avanço para: ${nextStatus}
                         </button>
+                        ${showRecusa ? `
+                        <button onclick="simularRecusaFNVJ()" class="w-full py-2.5 bg-white border-2 border-rose-300 text-rose-600 hover:bg-rose-50 rounded shadow-sm font-medium transition flex items-center justify-center">
+                            <i class="fa-solid fa-ban mr-2"></i> Simular recusa da FNVJ (estorna remoção)
+                        </button>` : ""}
                     </div>
                     <p class="text-center text-[10px] text-gray-400 mt-2">Apenas para demonstração. O parceiro faria isso via integração.</p>
                 `;
@@ -2475,6 +2732,41 @@
           if (currentView === "sac-reputacao")
             renderReputacao(document.getElementById("view-container"));
         }
+      }
+
+      // Recusa da FNVJ antes de iniciar o atendimento: estorna 1 remoção (crédito de uso)
+      // para a carteira de quem acionou. Não é devolução em dinheiro — o valor da compra
+      // do pacote já foi liquidado no Asaas; ver solicitarEstornoLote() para arrependimento.
+      function simularRecusaFNVJ() {
+        if (!currentOrderIdInDrawer) return;
+        const orderIndex = orders.findIndex((o) => o.id === currentOrderIdInDrawer);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        if (order.status !== "Encaminhado p/ FNVJ") return;
+
+        const wallet = loadRemovalWallet();
+        wallet.balance += 1;
+        wallet.transactions.push({
+          id: "refund-" + randomHex(8),
+          type: "removal_refund",
+          quantity: 1,
+          orderIds: [order.id],
+          reason: "fnvj_recusa",
+          createdAt: new Date().toISOString(),
+        });
+        saveRemovalWallet(wallet);
+
+        order.status = STATUS_RECUSADO;
+        order.historico.push({
+          date: formatDateFull(new Date()),
+          action: "FNVJ recusou o caso antes de iniciar o atendimento (fora de escopo/duplicado); 1 remoção estornada para a carteira TRACKen",
+          type: "partner_action",
+        });
+        saveData();
+        renderDrawerContent(order);
+        if (currentView === "sac-reputacao")
+          renderReputacao(document.getElementById("view-container"));
+        showToastOps(`Remoção estornada. Saldo atual: ${wallet.balance}.`);
       }
 
       // ============================================================

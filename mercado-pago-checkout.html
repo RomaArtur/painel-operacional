@@ -78,7 +78,7 @@
             <strong class="summary-value quantity-value" id="checkout-package-quantity">0</strong>
           </div>
           <div class="summary-row">
-            <span class="summary-label">Acionamentos deste lote</span>
+            <span class="summary-label" id="checkout-quantity-label">Acionamentos deste lote</span>
             <strong class="summary-value" id="checkout-quantity">0</strong>
           </div>
           <div class="summary-row">
@@ -151,7 +151,7 @@
         const rule = packageRules[packageCode];
         const valid = version === "1" &&
           ["seller", "operacional"].includes(source) &&
-          Number.isInteger(quantity) && quantity > 0 &&
+          Number.isInteger(quantity) && quantity >= 0 &&
           rule && Number.isInteger(packageQuantity) && packageQuantity >= rule.min && packageQuantity <= rule.max &&
           unitPrice === rule.unitPrice && amount === packageQuantity * unitPrice &&
           marketplaceFee === Number((amount * 0.1).toFixed(2)) &&
@@ -164,7 +164,13 @@
           return;
         }
 
-        document.getElementById("checkout-quantity").textContent = String(quantity);
+        if (quantity > 0) {
+          document.getElementById("checkout-quantity-label").textContent = "Acionamentos deste lote";
+          document.getElementById("checkout-quantity").textContent = String(quantity);
+        } else {
+          document.getElementById("checkout-quantity-label").textContent = "Uso imediato";
+          document.getElementById("checkout-quantity").textContent = "Nenhum — vai para a carteira";
+        }
         document.getElementById("checkout-package").textContent = rule.name;
         document.getElementById("checkout-package-quantity").textContent = String(packageQuantity);
         document.getElementById("checkout-unit-price").textContent = unitPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
