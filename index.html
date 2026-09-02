@@ -140,6 +140,17 @@
         transform: scale(1);
         opacity: 1;
       }
+      #vinculo-sla-popups {
+        pointer-events: none;
+      }
+      .sla-popup-card {
+        pointer-events: auto;
+        animation: slaPopupIn 0.2s ease;
+      }
+      @keyframes slaPopupIn {
+        from { opacity: 0; transform: translateX(12px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
 
       .timeline-container {
         position: relative;
@@ -279,6 +290,7 @@
   <body
     class="flex h-screen overflow-hidden text-sm bg-[#F3F4F6] text-gray-700"
   >
+    <div id="vinculo-sla-popups" class="fixed top-4 right-4 z-[80] w-[min(100%-2rem,22rem)] space-y-2"></div>
     <!-- Sidebar Desktop -->
     <aside
       id="sidebar"
@@ -1778,6 +1790,59 @@
         }, 2200);
       }
 
+      function showSlaPopupOps(message, tone = "warn") {
+        const host = document.getElementById("vinculo-sla-popups");
+        if (!host) {
+          showToastOps(message);
+          return;
+        }
+        const colors =
+          tone === "urgent"
+            ? "border-red-200 bg-red-50 text-red-900"
+            : tone === "info"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : "border-amber-200 bg-amber-50 text-amber-950";
+        const title =
+          tone === "urgent" ? "Prazo quase no fim" : tone === "info" ? "Nova solicitação" : "Prazo da análise";
+        const card = document.createElement("div");
+        card.className = `sla-popup-card rounded-lg border shadow-lg p-3 ${colors}`;
+        card.innerHTML = `<div class="flex items-start gap-2">
+          <i class="fa-solid fa-clock mt-0.5"></i>
+          <div class="min-w-0">
+            <div class="text-[11px] font-bold uppercase tracking-wide">${title}</div>
+            <p class="text-sm mt-1 leading-snug">${message}</p>
+          </div>
+          <button type="button" class="ml-auto text-current/70 hover:text-current shrink-0" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>`;
+        card.querySelector("button")?.addEventListener("click", () => card.remove());
+        host.appendChild(card);
+        setTimeout(() => {
+          card.style.opacity = "0";
+          card.style.transition = "opacity .3s ease";
+          setTimeout(() => card.remove(), 300);
+        }, 6500);
+      }
+
+      function slaPopupToneFromMessage(message) {
+        if (/Nova solicitação/.test(message)) return "info";
+        if (/Urgente|30 min/.test(message)) return "urgent";
+        return "warn";
+      }
+
+      function simularPopupsPrazoVinculo() {
+        const store = loadVinculoStore();
+        const req =
+          (store.requests || []).find((r) => r.status === "AGUARDANDO_ANALISE") ||
+          (store.requests || [])[0];
+        const id = req?.requestId || "SOL-10428";
+        const msgs = [
+          { tone: "info", text: `Nova solicitação ${id}. E-mail enviado para ${CORE_FILIAL_EMAIL} (e-mail da transportadora no Core).` },
+          { tone: "warn", text: `${id}: restam cerca de 2 horas úteis.` },
+          { tone: "urgent", text: `Urgente: ${id} expira em menos de 30 min úteis.` },
+        ];
+        msgs.forEach((item, i) => setTimeout(() => showSlaPopupOps(item.text, item.tone), i * 650));
+      }
+
       function getVinculoRequest(requestId) {
         return loadVinculoStore().requests.find((r) => r.requestId === requestId);
       }
@@ -2920,6 +2985,7 @@
       </p>
       <div class="flex flex-wrap gap-2 mt-3">
         <button type="button" onclick="adiantarSlaVinculo(2)" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Adiantar 2h (protótipo)</button>
+        <button type="button" onclick="simularPopupsPrazoVinculo()" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Simular pop-ups de prazo</button>
         <button type="button" onclick="abrirCaixaEmailVinculo()" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Ver e-mails simulados</button>
         <button type="button" onclick="abrirModalCadastroAleatorioVinculo()" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Gerar cadastro aleatório</button>
       </div>
@@ -3632,7 +3698,7 @@
         const notes = maybeSlaNoticesOps(store);
         saveVinculoStore(store);
         if (currentView === "vinculo") renderSolicitacoesVinculo(document.getElementById("view-container"));
-        notes.forEach((msg) => showToastOps(msg));
+        notes.forEach((msg) => showSlaPopupOps(msg, slaPopupToneFromMessage(msg)));
         if (!notes.length) showToastOps(`Relógio adiantado ${hours}h (horário comercial conta no SLA).`);
       }
 
@@ -3761,7 +3827,7 @@
         saveVinculoStore(store);
         fecharModalCadastroAleatorioVinculo();
         refreshVinculoUi(requestId);
-        notes.forEach((msg) => showToastOps(msg));
+        notes.forEach((msg) => showSlaPopupOps(msg, slaPopupToneFromMessage(msg)));
         showToastOps(`${requestId} gerada (${vinculoOrigemLabel(origem)}).`);
         openVinculoDrawer(requestId);
       }
@@ -3894,7 +3960,7 @@
         else if (imported || solo === "vinculo") navigate("vinculo");
         else navigate("sac-reputacao");
         if (checkoutMessage) setTimeout(() => showToastOps(checkoutMessage), 100);
-        slaNotes.forEach((msg, i) => setTimeout(() => showToastOps(msg), 200 + i * 400));
+        slaNotes.forEach((msg, i) => setTimeout(() => showSlaPopupOps(msg, slaPopupToneFromMessage(msg)), 200 + i * 400));
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
