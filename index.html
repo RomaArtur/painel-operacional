@@ -141,15 +141,20 @@
         opacity: 1;
       }
       #vinculo-sla-popups {
-        pointer-events: none;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(17, 24, 39, 0.55);
+      }
+      #vinculo-sla-popups.active {
+        display: flex;
       }
       .sla-popup-card {
-        pointer-events: auto;
         animation: slaPopupIn 0.2s ease;
       }
       @keyframes slaPopupIn {
-        from { opacity: 0; transform: translateX(12px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
       }
 
       .timeline-container {
@@ -290,7 +295,7 @@
   <body
     class="flex h-screen overflow-hidden text-sm bg-[#F3F4F6] text-gray-700"
   >
-    <div id="vinculo-sla-popups" class="fixed top-4 right-4 z-[80] w-[min(100%-2rem,22rem)] space-y-2"></div>
+    <div id="vinculo-sla-popups" class="fixed inset-0 z-[80] p-4"></div>
     <!-- Sidebar Desktop -->
     <aside
       id="sidebar"
@@ -439,7 +444,7 @@
             id="nav-vinculo"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
             data-title="New Seller"
-            data-desc="Receba solicitações via TRACKen ou via link da transportadora. Cadastro como Responsável e Cliente; serviços e tabelas são opcionais."
+            data-desc="Receba solicitações TRACKen ou Transportadora. Cadastro como Responsável e Cliente; serviços e tabelas são opcionais."
             data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
@@ -690,7 +695,7 @@
             id="nav-vinculo-mobile"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
             data-title="New Seller"
-            data-desc="Receba solicitações via TRACKen ou via link da transportadora. Cadastro como Responsável e Cliente; serviços e tabelas são opcionais."
+            data-desc="Receba solicitações TRACKen ou Transportadora. Cadastro como Responsável e Cliente; serviços e tabelas são opcionais."
             data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
@@ -974,8 +979,8 @@
           <div>
             <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Origem</label>
             <select id="vinculo-random-origem" class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-tracken-green bg-white">
-              <option value="TRACKEN">via TRACKen</option>
-              <option value="TRANSPORTADORA">via link</option>
+              <option value="TRACKEN">TRACKen</option>
+              <option value="TRANSPORTADORA">Transportadora</option>
             </select>
           </div>
           <div class="flex justify-end gap-3 pt-1">
@@ -1534,7 +1539,7 @@
       }
 
       function vinculoOrigemLabel(origem) {
-        return origem === "TRANSPORTADORA" ? "via link" : "via TRACKen";
+        return origem === "TRANSPORTADORA" ? "Transportadora" : "TRACKen";
       }
 
       function emptyVinculoStore() {
@@ -1790,37 +1795,52 @@
         }, 2200);
       }
 
+      let vinculoSlaPopupQueue = [];
+      let vinculoSlaPopupOpen = false;
+
       function showSlaPopupOps(message, tone = "warn") {
+        vinculoSlaPopupQueue.push({ message, tone });
+        renderSlaPopupOps();
+      }
+
+      function renderSlaPopupOps() {
         const host = document.getElementById("vinculo-sla-popups");
-        if (!host) {
-          showToastOps(message);
+        if (!host) return;
+        if (vinculoSlaPopupOpen) return;
+        const next = vinculoSlaPopupQueue.shift();
+        if (!next) {
+          host.classList.remove("active");
+          host.innerHTML = "";
           return;
         }
+        vinculoSlaPopupOpen = true;
         const colors =
-          tone === "urgent"
-            ? "border-red-200 bg-red-50 text-red-900"
-            : tone === "info"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-              : "border-amber-200 bg-amber-50 text-amber-950";
+          next.tone === "urgent"
+            ? "border-red-200 bg-white text-gray-800"
+            : next.tone === "info"
+              ? "border-emerald-200 bg-white text-gray-800"
+              : "border-amber-200 bg-white text-gray-800";
+        const accent =
+          next.tone === "urgent" ? "text-red-600" : next.tone === "info" ? "text-emerald-600" : "text-amber-600";
         const title =
-          tone === "urgent" ? "Prazo quase no fim" : tone === "info" ? "Nova solicitação" : "Prazo da análise";
-        const card = document.createElement("div");
-        card.className = `sla-popup-card rounded-lg border shadow-lg p-3 ${colors}`;
-        card.innerHTML = `<div class="flex items-start gap-2">
-          <i class="fa-solid fa-clock mt-0.5"></i>
-          <div class="min-w-0">
-            <div class="text-[11px] font-bold uppercase tracking-wide">${title}</div>
-            <p class="text-sm mt-1 leading-snug">${message}</p>
+          next.tone === "urgent" ? "Prazo quase no fim" : next.tone === "info" ? "Nova solicitação" : "Prazo da análise";
+        host.classList.add("active");
+        host.innerHTML = `<div class="sla-popup-card w-full max-w-md rounded-xl border-2 bg-white shadow-2xl p-5 ${colors}">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-clock ${accent} mt-1"></i>
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] font-bold uppercase tracking-wide ${accent}">${title}</div>
+              <p class="text-sm mt-2 leading-relaxed text-gray-700">${next.message}</p>
+            </div>
+            <button type="button" id="vinculo-sla-popup-close" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center shrink-0" aria-label="Fechar"><i class="fa-solid fa-xmark text-lg"></i></button>
           </div>
-          <button type="button" class="ml-auto text-current/70 hover:text-current shrink-0" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
         </div>`;
-        card.querySelector("button")?.addEventListener("click", () => card.remove());
-        host.appendChild(card);
-        setTimeout(() => {
-          card.style.opacity = "0";
-          card.style.transition = "opacity .3s ease";
-          setTimeout(() => card.remove(), 300);
-        }, 6500);
+        document.getElementById("vinculo-sla-popup-close")?.addEventListener("click", fecharSlaPopupOps);
+      }
+
+      function fecharSlaPopupOps() {
+        vinculoSlaPopupOpen = false;
+        renderSlaPopupOps();
       }
 
       function slaPopupToneFromMessage(message) {
@@ -1835,12 +1855,11 @@
           (store.requests || []).find((r) => r.status === "AGUARDANDO_ANALISE") ||
           (store.requests || [])[0];
         const id = req?.requestId || "SOL-10428";
-        const msgs = [
+        [
           { tone: "info", text: `Nova solicitação ${id}. E-mail enviado para ${CORE_FILIAL_EMAIL} (e-mail da transportadora no Core).` },
           { tone: "warn", text: `${id}: restam cerca de 2 horas úteis.` },
           { tone: "urgent", text: `Urgente: ${id} expira em menos de 30 min úteis.` },
-        ];
-        msgs.forEach((item, i) => setTimeout(() => showSlaPopupOps(item.text, item.tone), i * 650));
+        ].forEach((item) => showSlaPopupOps(item.text, item.tone));
       }
 
       function getVinculoRequest(requestId) {
@@ -2981,7 +3000,7 @@
         New Seller
       </h1>
       <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-        Solicitações via TRACKen ou via link. Prazo de 4 horas úteis (seg–sex, 8h–18h). E-mails da transportadora usam o endereço da transportadora no TRACKen Core (${CORE_FILIAL_EMAIL}). Acesso à fila, aprovação e recusa: flag no usuário do Core.
+        Solicitações TRACKen ou Transportadora. Prazo de 4 horas úteis (seg–sex, 8h–18h). E-mails da transportadora usam o endereço da transportadora no TRACKen Core (${CORE_FILIAL_EMAIL}). Acesso à fila, aprovação e recusa: flag no usuário do Core.
       </p>
       <div class="flex flex-wrap gap-2 mt-3">
         <button type="button" onclick="adiantarSlaVinculo(2)" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Adiantar 2h (protótipo)</button>
@@ -3033,7 +3052,7 @@
             <th class="p-3 font-medium">E-MAIL</th>
             <th class="p-3 font-medium">TELEFONE</th>
             <th class="p-3 font-medium">DATA</th>
-            <th class="p-3 font-medium">SLA</th>
+            <th class="p-3 font-medium">PRAZO</th>
             <th class="p-3 font-medium">STATUS</th>
             <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
           </tr></thead>
@@ -3144,6 +3163,7 @@
               <div><span class="text-gray-500 block text-xs uppercase">Telefone</span> <span class="font-medium">${snap.telefone || "—"}</span></div>
               <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">E-mail</span> <span class="font-medium">${snap.email || "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Status</span> <span class="px-2 py-0.5 mt-1 text-[11px] rounded border ${getVinculoStatusColor(req.status)} font-medium inline-block">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Prazo</span> <span class="font-medium">${SLA_STATUSES.includes(req.status) ? formatSla(slaRemainingMs(req, loadVinculoStore())) : "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Protocolo</span> <span class="font-medium">${req.requestId}</span></div>
               ${req.carrierCustomerId ? `<div><span class="text-gray-500 block text-xs uppercase">Cadastro</span> <span class="font-medium">${req.carrierCustomerId}</span></div>` : ""}
               ${req.carrierLoginId ? `<div><span class="text-gray-500 block text-xs uppercase">Login</span> <span class="font-medium">${req.carrierLoginId}</span></div>` : ""}
@@ -3809,8 +3829,8 @@
               at: createdAt,
               action:
                 origem === "TRANSPORTADORA"
-                  ? "Cadastro aleatório (protótipo) via link da EXPRESS LOGÍSTICA SP"
-                  : "Cadastro aleatório (protótipo) via TRACKen",
+                  ? "Cadastro aleatório (protótipo) pela Transportadora EXPRESS LOGÍSTICA SP"
+                  : "Cadastro aleatório (protótipo) pela TRACKen",
               type: "system",
             },
           ],
@@ -3960,7 +3980,7 @@
         else if (imported || solo === "vinculo") navigate("vinculo");
         else navigate("sac-reputacao");
         if (checkoutMessage) setTimeout(() => showToastOps(checkoutMessage), 100);
-        slaNotes.forEach((msg, i) => setTimeout(() => showSlaPopupOps(msg, slaPopupToneFromMessage(msg)), 200 + i * 400));
+        slaNotes.forEach((msg) => showSlaPopupOps(msg, slaPopupToneFromMessage(msg)));
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
