@@ -426,15 +426,15 @@
             onclick="navigate('vinculo')"
             id="nav-vinculo"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-            data-title="Vínculo com Sellers"
-            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e ativação do acesso."
+            data-title="New Seller"
+            data-desc="Receba solicitações via TRACKen ou via link da transportadora. Cadastro como Responsável e Cliente para vincular serviços e tabelas."
             data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
           >
             <div class="flex items-center">
               <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
-              <span>Solicitações de vínculo</span>
+              <span>New Seller</span>
             </div>
             <span id="vinculo-nav-badge" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
           </a>
@@ -677,15 +677,15 @@
             "
             id="nav-vinculo-mobile"
             class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors font-medium"
-            data-title="Vínculo com Sellers"
-            data-desc="Receba e analise solicitações de vínculo enviadas pelo TRACKen Seller. Acompanhe aprovação, cadastro e ativação do acesso."
+            data-title="New Seller"
+            data-desc="Receba solicitações via TRACKen ou via link da transportadora. Cadastro como Responsável e Cliente para vincular serviços e tabelas."
             data-sub="O acesso só é liberado após o cadastro e a ativação no ambiente da transportadora."
             onmouseenter="showTooltip(event, this)"
             onmouseleave="hideTooltip()"
           >
             <div class="flex items-center">
               <i class="fa-solid fa-link w-5 text-center mr-3 text-gray-500"></i>
-              <span>Solicitações de vínculo</span>
+              <span>New Seller</span>
             </div>
             <span id="vinculo-nav-badge-mobile" class="bg-tracken-green text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm hidden">N</span>
           </a>
@@ -942,6 +942,16 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="vinculo-email-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this) fecharCaixaEmailVinculo()">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden">
+        <div class="px-5 py-3 border-b flex justify-between items-center">
+          <h3 class="font-semibold text-gray-800">E-mails simulados</h3>
+          <button type="button" onclick="fecharCaixaEmailVinculo()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="vinculo-email-list" class="p-4 overflow-y-auto max-h-[60vh] space-y-3 text-sm"></div>
       </div>
     </div>
 
@@ -1465,7 +1475,10 @@
         RECUSADA: "Recusada",
         CADASTRO_EM_CRIACAO: "Aguardando ativação",
         CONCLUIDA: "Concluída",
+        EXPIRADA: "Expirada",
       };
+      const CORE_FILIAL_EMAIL = "parceiros@expresssp.com.br";
+      const SLA_STATUSES = ["AGUARDANDO_ANALISE", "EM_CONTATO"];
 
       function normalizeVinculoRequest(req) {
         const snapshot = { ...(req?.sellerSnapshot || {}) };
@@ -1480,44 +1493,127 @@
       }
 
       function vinculoOrigemLabel(origem) {
-        return origem === "TRANSPORTADORA" ? "Transportadora" : "TRACKen";
+        return origem === "TRANSPORTADORA" ? "via link" : "via TRACKen";
       }
 
       function emptyVinculoStore() {
         return {
-          seller: { ...DEMO_SELLER },
+          accounts: [],
+          seller: null,
           requests: [],
           customers: [],
           logins: [],
           events: [],
+          emails: [],
+          slaNowOffsetMs: 0,
         };
+      }
+
+      function slaNowDate(store) {
+        return new Date(Date.now() + ((store || loadVinculoStore()).slaNowOffsetMs || 0));
+      }
+
+      function addBusinessHours(start, hours) {
+        const d = new Date(start.getTime());
+        let remaining = hours * 60;
+        while (remaining > 0) {
+          d.setMinutes(d.getMinutes() + 1);
+          const day = d.getDay();
+          const h = d.getHours() + d.getMinutes() / 60;
+          if (day !== 0 && day !== 6 && h >= 8 && h < 18) remaining -= 1;
+        }
+        return d;
+      }
+
+      function slaDeadline(createdAt) {
+        return addBusinessHours(new Date(createdAt), 4);
+      }
+
+      function slaRemainingMs(req, store) {
+        if (!SLA_STATUSES.includes(req.status)) return null;
+        return slaDeadline(req.createdAt).getTime() - slaNowDate(store).getTime();
+      }
+
+      function formatSla(ms) {
+        if (ms == null) return "—";
+        if (ms <= 0) return "Expirada";
+        const min = Math.round(ms / 60000);
+        const h = Math.floor(min / 60);
+        const m = min % 60;
+        return h ? `${h}h ${m}min` : `${m} min`;
+      }
+
+      function pushEmail(store, mail) {
+        store.emails = store.emails || [];
+        store.emails.push({ ...mail, at: slaNowDate(store).toISOString(), from: mail.from || "TRACKen" });
+      }
+
+      function expireOverdueVinculo(store) {
+        let changed = false;
+        (store.requests || []).forEach((req) => {
+          if (!SLA_STATUSES.includes(req.status)) return;
+          if (slaRemainingMs(req, store) > 0) return;
+          req.status = "EXPIRADA";
+          req.updatedAt = slaNowDate(store).toISOString();
+          req.historico = req.historico || [];
+          req.historico.push({ at: req.updatedAt, action: "Solicitação expirada (4 horas úteis).", type: "system" });
+          pushEmail(store, { to: req.sellerSnapshot?.email, subject: `Solicitação ${req.requestId} expirada`, body: "O prazo acabou. Você pode enviar uma nova solicitação." });
+          pushEmail(store, { to: CORE_FILIAL_EMAIL, subject: `Solicitação ${req.requestId} expirada`, body: "A solicitação expirou sem aprovação ou recusa." });
+          changed = true;
+        });
+        if (changed) saveVinculoStore(store);
+      }
+
+      function maybeSlaNoticesOps(store) {
+        const popups = [];
+        (store.requests || []).forEach((req) => {
+          if (!SLA_STATUSES.includes(req.status)) return;
+          const ms = slaRemainingMs(req, store);
+          req.slaNotices = req.slaNotices || [];
+          if (!req.slaNotices.includes("created")) {
+            req.slaNotices.push("created");
+            pushEmail(store, { to: CORE_FILIAL_EMAIL, subject: `Nova solicitação ${req.requestId}`, body: `${req.sellerSnapshot?.nome || "Seller"} pediu cadastro. Analise em até 4 horas úteis.` });
+            popups.push(`Nova solicitação ${req.requestId}. E-mail enviado para ${CORE_FILIAL_EMAIL} (e-mail da filial no Core).`);
+          }
+          if (ms != null && ms <= 2 * 3600000 && ms > 30 * 60000 && !req.slaNotices.includes("half")) {
+            req.slaNotices.push("half");
+            pushEmail(store, { to: CORE_FILIAL_EMAIL, subject: `Pendente ${req.requestId}`, body: "Siga com aprovação ou recusa. Metade do prazo de 4h úteis." });
+            popups.push(`${req.requestId}: restam cerca de 2 horas úteis.`);
+          }
+          if (ms != null && ms <= 30 * 60000 && ms > 0 && !req.slaNotices.includes("urgent")) {
+            req.slaNotices.push("urgent");
+            pushEmail(store, { to: CORE_FILIAL_EMAIL, subject: `Urgente ${req.requestId}`, body: "Menos de 30 minutos para expirar." });
+            popups.push(`Urgente: ${req.requestId} expira em menos de 30 min úteis.`);
+          }
+        });
+        saveVinculoStore(store);
+        return popups;
       }
 
       function loadVinculoStore() {
         const raw = localStorage.getItem(VINCULO_STORE_KEY);
+        let parsed;
         if (!raw) {
-          const store = emptyVinculoStore();
-          store.events.push({
-            event: "seller_account_created",
-            at: new Date().toISOString(),
-            payload: { sellerId: DEMO_SELLER.sellerId },
-          });
-          saveVinculoStore(store);
-          return store;
+          parsed = emptyVinculoStore();
+          saveVinculoStore(parsed);
+        } else {
+          try {
+            parsed = JSON.parse(raw);
+            parsed.accounts = parsed.accounts || [];
+            if (!parsed.seller && parsed.accounts[0]) parsed.seller = parsed.accounts[0];
+            parsed.requests = (parsed.requests || []).map(normalizeVinculoRequest);
+            parsed.customers = parsed.customers || [];
+            parsed.logins = parsed.logins || [];
+            parsed.events = parsed.events || [];
+            parsed.emails = parsed.emails || [];
+            parsed.slaNowOffsetMs = parsed.slaNowOffsetMs || 0;
+          } catch (e) {
+            parsed = emptyVinculoStore();
+            saveVinculoStore(parsed);
+          }
         }
-        try {
-          const parsed = JSON.parse(raw);
-          if (!parsed.seller) parsed.seller = { ...DEMO_SELLER };
-          parsed.requests = (parsed.requests || []).map(normalizeVinculoRequest);
-          parsed.customers = parsed.customers || [];
-          parsed.logins = parsed.logins || [];
-          parsed.events = parsed.events || [];
-          return parsed;
-        } catch (e) {
-          const store = emptyVinculoStore();
-          saveVinculoStore(store);
-          return store;
-        }
+        expireOverdueVinculo(parsed);
+        return parsed;
       }
 
       function saveVinculoStore(store) {
@@ -1615,6 +1711,8 @@
             return "bg-orange-100 text-orange-700 border-orange-200";
           case "CONCLUIDA":
             return "bg-green-100 text-green-700 border-green-200";
+          case "EXPIRADA":
+            return "bg-gray-100 text-gray-600 border-gray-300";
           default:
             return "bg-gray-100 text-gray-700 border-gray-200";
         }
@@ -1638,11 +1736,6 @@
 
       function resetVinculoStoreKeepSeller() {
         const store = emptyVinculoStore();
-        store.events.push({
-          event: "seller_account_created",
-          at: nowIso(),
-          payload: { sellerId: DEMO_SELLER.sellerId },
-        });
         saveVinculoStore(store);
       }
 
@@ -2789,15 +2882,19 @@
     <div class="mb-6">
       <div class="text-sm text-gray-400 mb-1 flex items-center">
         Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
-        <span class="text-gray-600 font-medium">Solicitações de vínculo</span>
+        <span class="text-gray-600 font-medium">New Seller</span>
       </div>
       <h1 class="text-2xl font-semibold text-gray-800 flex items-center">
         <i class="fa-solid fa-link text-tracken-green mr-2"></i>
-        Solicitações de vínculo
+        New Seller
       </h1>
       <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-        Analise pedidos de vínculo enviados pelo TRACKen Seller. O acesso só é liberado após cadastro e ativação no ambiente da transportadora.
+        Solicitações via TRACKen ou via link. Prazo de 4 horas úteis (seg–sex, 8h–18h). E-mails da transportadora usam o endereço da filial no TRACKen Core (${CORE_FILIAL_EMAIL}). Perfil que recebe/aprova: ainda não definido — qualquer usuário deste operacional.
       </p>
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button type="button" onclick="adiantarSlaVinculo(2)" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Adiantar 2h (protótipo)</button>
+        <button type="button" onclick="abrirCaixaEmailVinculo()" class="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50">Ver e-mails simulados</button>
+      </div>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-white rounded p-4 border border-gray-200 shadow-seller">
@@ -2825,6 +2922,7 @@
         <option value="APROVADA">Aprovada</option>
         <option value="CADASTRO_EM_CRIACAO">Aguardando ativação</option>
         <option value="CONCLUIDA">Concluída</option>
+        <option value="EXPIRADA">Expirada</option>
         <option value="RECUSADA">Recusada</option>
       </select>
       <button type="button" onclick="copiarLinkCadastroTransportadora()" class="w-full sm:w-auto px-4 py-2 bg-tracken-green hover:bg-green-600 text-white rounded text-sm font-semibold inline-flex items-center justify-center gap-2">
@@ -2839,7 +2937,7 @@
             <th class="p-3 font-medium">ORIGEM</th>
             <th class="p-3 font-medium">CPF/CNPJ</th>
             <th class="p-3 font-medium">E-MAIL / TELEFONE</th>
-            <th class="p-3 font-medium">DATA</th>
+            <th class="p-3 font-medium">DATA / SLA</th>
             <th class="p-3 font-medium">STATUS</th>
             <th class="p-3 font-medium w-12 text-center">AÇÕES</th>
           </tr></thead>
@@ -2875,7 +2973,7 @@
             <tr>
               <td colspan="7" class="p-8 text-center text-gray-500">
                 <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-3 block"></i>
-                <p class="font-medium text-gray-700">Nenhuma solicitação de vínculo</p>
+                <p class="font-medium text-gray-700">Nenhuma solicitação New Seller</p>
                 <p class="text-xs mt-1 max-w-md mx-auto">As novas solicitações do Seller aparecerão automaticamente aqui.</p>
               </td>
             </tr>`;
@@ -2891,7 +2989,7 @@
                 <td class="p-3"><span class="inline-flex px-2 py-1 rounded border text-[11px] font-semibold ${req.origem === "TRANSPORTADORA" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-green-50 border-green-200 text-green-700"}">${vinculoOrigemLabel(req.origem)}</span></td>
                 <td class="p-3 text-gray-600">${snap.documento || snap.cnpj || "—"}</td>
                 <td class="p-3"><div class="text-gray-800">${snap.email || "—"}</div><div class="text-xs text-gray-500">${snap.telefone || ""}</div></td>
-                <td class="p-3 text-gray-600 whitespace-nowrap">${formatVinculoDate(req.createdAt)}</td>
+                <td class="p-3 text-gray-600 whitespace-nowrap">${formatVinculoDate(req.createdAt)}${SLA_STATUSES.includes(req.status) ? `<div class="text-[11px] text-amber-700 mt-1">${formatSla(slaRemainingMs(req, store))}</div>` : ""}</td>
                 <td class="p-3"><span class="px-2.5 py-1 text-xs rounded-md border ${getVinculoStatusColor(req.status)} font-medium inline-flex items-center">${VINCULO_STATUS_LABEL[req.status] || req.status}</span></td>
                 <td class="p-3 text-center relative">
                   <button onclick="toggleActionMenu('${req.requestId}', event)" class="text-gray-400 hover:text-gray-700 w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -2917,6 +3015,7 @@
           ${canReject ? `<button onclick="abrirModalRecusarVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"><i class="fa-solid fa-ban w-5 text-red-400"></i> Recusar solicitação</button>` : ""}
           ${canCadastro ? `<button onclick="irParaCadastroVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-user-plus w-5 text-gray-400"></i> Criar cadastro</button>` : ""}
           ${canLogin ? `<button onclick="irParaLoginVinculo('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-user-check w-5 text-gray-400"></i> Ativar acesso</button>` : ""}
+          ${req.status === "CONCLUIDA" && !req.semRecebimentoFisico15d ? `<button onclick="simular15DiasSemRecebimento('${req.requestId}')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"><i class="fa-solid fa-clock w-5 text-gray-400"></i> Simular 15 dias sem coleta</button>` : ""}
         `;
       }
 
@@ -2942,6 +3041,7 @@
             <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
               <div class="col-span-2"><span class="text-gray-500 block text-xs uppercase">ID de origem do Seller</span> <span class="font-medium">${req.sellerId}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Seller</span> <span class="font-medium">${snap.nome || "—"}</span></div>
+              <div><span class="text-gray-500 block text-xs uppercase">Login</span> <span class="font-medium">${snap.login || "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Origem</span> <span class="font-medium">${vinculoOrigemLabel(req.origem)}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">CPF/CNPJ</span> <span class="font-medium">${snap.documento || snap.cnpj || "—"}</span></div>
               <div><span class="text-gray-500 block text-xs uppercase">Telefone</span> <span class="font-medium">${snap.telefone || "—"}</span></div>
@@ -3109,12 +3209,8 @@
         { id: "mercadolivre", nome: "Mercado Livre" },
         { id: "shopee", nome: "Shopee" },
         { id: "magalu", nome: "Magalu" },
-        { id: "bling", nome: "Bling" },
-        { id: "vtex", nome: "VTEX" },
-        { id: "tiny", nome: "Tiny" },
         { id: "amazon", nome: "Amazon" },
-        { id: "shopify", nome: "Shopify" },
-        { id: "outros", nome: "Outros" },
+        { id: "avulso", nome: "Avulso" },
       ];
       let vinculoServicoPersonalizadoSeq = 0;
 
@@ -3267,7 +3363,7 @@
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
               Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
-              <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
+              <button onclick="navigate('vinculo')" class="hover:text-gray-600">New Seller</button>
               <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
               <span class="text-gray-600 font-medium">Criar cadastro</span>
             </div>
@@ -3275,7 +3371,7 @@
               <i class="fa-solid fa-user-plus text-tracken-green mr-2"></i> Criar cadastro
             </h1>
             <p class="text-xs lg:text-sm text-gray-500 mt-0.5">
-              Cadastro do cliente na filial da transportadora. Campos com * são obrigatórios.
+              Cadastro na filial como <strong>Responsável</strong> e <strong>Cliente</strong> (os dois), para já vincular serviços e tabelas. Perfil de login no TRACKen Seller continua Cliente.
             </p>
           </div>
           <form id="form-cadastro-vinculo" onsubmit="salvarCadastroVinculo(event)" class="bg-white rounded-lg shadow-seller border border-gray-200 p-6 max-w-4xl space-y-8">
@@ -3339,12 +3435,23 @@
               </div>
             </section>
             <section>
+              <h2 class="text-sm font-semibold text-gray-800 mb-4">Tipo de entidade</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Entidades</label>
+                  <input type="text" value="Responsável e Cliente" readonly class="${readonlyClassVinculo()}" />
+                  <p class="text-[11px] text-gray-400 mt-1">Fixo neste fluxo. Cliente é o que permite vincular serviços e tabelas.</p>
+                </div>
+              </div>
+            </section>
+            <section>
               <h2 class="text-sm font-semibold text-gray-800 mb-1">Vínculo de serviços *</h2>
-              <p class="text-xs text-gray-500 mb-3">Marque os canais do cliente e a tabela de preço. As tabelas abaixo são só exemplos (cada transportadora cadastra as suas).</p>
+              <p class="text-xs text-gray-500 mb-3">Só marketplaces (Magalu, Shopee, Mercado Livre, Amazon, Avulso) e serviços personalizados da transportadora.</p>
+              ${[...(req.marketplaces || []), ...(snap.marketplaces || [])].length ? `<div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">Este seller informou no cadastro que atua em <strong>${[...new Set([...(req.marketplaces || []), ...(snap.marketplaces || [])])].map((id) => VINCULO_SERVICOS_EXEMPLO.find((s) => s.id === id)?.nome || id).join(", ")}</strong>. Use isso para já vincular os canais certos.</div>` : ""}
               <div class="space-y-2">${servicosHtml}</div>
               <div class="mt-3">
                 <button type="button" onclick="adicionarServicoPersonalizadoVinculo()" class="inline-flex items-center gap-2 px-3 py-2 border border-tracken-green text-tracken-green hover:bg-green-50 rounded text-sm font-semibold">
-                  <i class="fa-solid fa-plus"></i> Mais serviços
+                  <i class="fa-solid fa-plus"></i> Serviços personalizados da transportadora
                 </button>
               </div>
               <div id="servicos-personalizados-vinculo" class="hidden mt-4 border-t border-gray-100 pt-4">
@@ -3409,8 +3516,7 @@
           servicos,
           email: form.email.value.trim(),
           complemento: form.complemento.value.trim(),
-          observacoes: form.observacoes.value.trim(),
-          createdAt: nowIso(),
+          tiposEntidade: ["Responsavel", "Cliente"],
         };
         store.customers.push(customer);
         const target = store.requests.find((r) => r.requestId === req.requestId);
@@ -3449,14 +3555,14 @@
         }
         const customer = getVinculoCustomer(req.carrierCustomerId) || {};
         const email = customer.email || (req.sellerSnapshot || {}).email || "";
-        const username = customer.nomeFantasia || "";
+        const username = (req.sellerSnapshot || {}).login || customer.nomeFantasia || "";
         const documento = customer.documento || "";
         const whatsapp = customer.telefone || "";
         container.innerHTML = `
           <div class="mb-6">
             <div class="text-sm text-gray-400 mb-1 flex items-center">
               Comercial <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
-              <button onclick="navigate('vinculo')" class="hover:text-gray-600">Solicitações de vínculo</button>
+              <button onclick="navigate('vinculo')" class="hover:text-gray-600">New Seller</button>
               <i class="fa-solid fa-chevron-right text-[10px] mx-2"></i>
               <span class="text-gray-600 font-medium">Ativar acesso</span>
             </div>
@@ -3474,8 +3580,9 @@
                 <input name="email" type="email" required value="${escapeVinculoAttr(email)}" class="${inputClassVinculo()}" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nome de usuário</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Login</label>
                 <input name="username" type="text" required value="${escapeVinculoAttr(username)}" class="${inputClassVinculo()}" />
+                <p class="text-[11px] text-gray-400 mt-1">Login do cadastro New Seller. Depois do vínculo, entra no TRACKen Seller.</p>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Documento</label>
@@ -3512,16 +3619,54 @@
 
       function getLinkCadastroTransportadora() {
         return new URL(
-          "../painel-new-seller/criar-conta/transportadora-demo/",
+          "../painel-new-seller/criar-conta/transportadora-demo/?carrier=express-sp",
           location.href
         ).href;
+      }
+
+      function adiantarSlaVinculo(hours) {
+        const store = loadVinculoStore();
+        store.slaNowOffsetMs = (store.slaNowOffsetMs || 0) + hours * 3600000;
+        expireOverdueVinculo(store);
+        const notes = maybeSlaNoticesOps(store);
+        saveVinculoStore(store);
+        if (currentView === "vinculo") renderSolicitacoesVinculo(document.getElementById("view-container"));
+        notes.forEach((msg) => showToastOps(msg));
+        if (!notes.length) showToastOps(`Relógio adiantado ${hours}h (horário comercial conta no SLA).`);
+      }
+
+      function simular15DiasSemRecebimento(requestId) {
+        patchVinculoRequest(requestId, (r) => {
+          r.semRecebimentoFisico15d = true;
+          r.historico.push({
+            at: nowIso(),
+            action: "15 dias sem recebimento físico. New Seller liberado para nova solicitação.",
+            type: "system",
+          });
+        }, "seller_inactive_15d");
+        showToastOps("New Seller liberado para este seller (simulação de 15 dias sem coleta).");
+        refreshVinculoUi(requestId);
+      }
+
+      function abrirCaixaEmailVinculo() {
+        const store = loadVinculoStore();
+        const list = document.getElementById("vinculo-email-list");
+        const mails = [...(store.emails || [])].reverse();
+        list.innerHTML = mails.length
+          ? mails.map((m) => `<div class="border border-gray-200 rounded-lg p-3"><div class="text-[11px] text-gray-400">${formatVinculoDate(m.at)}</div><div class="text-xs text-gray-500 mt-1">De: ${m.from || "TRACKen"} · Para: ${m.to || "—"}</div><div class="font-semibold text-gray-800 mt-1">${m.subject}</div><p class="text-gray-600 mt-1">${m.body}</p></div>`).join("")
+          : `<p class="text-gray-500">Nenhum e-mail ainda.</p>`;
+        document.getElementById("vinculo-email-modal").classList.remove("hidden");
+      }
+
+      function fecharCaixaEmailVinculo() {
+        document.getElementById("vinculo-email-modal").classList.add("hidden");
       }
 
       function copiarLinkCadastroTransportadora() {
         const link = getLinkCadastroTransportadora();
         if (navigator.clipboard?.writeText) {
           navigator.clipboard.writeText(link).then(
-            () => showToastOps("Link da Transportadora Demo copiado."),
+            () => showToastOps("Link de convite copiado (aponta a transportadora via ?carrier=)."),
             () => showToastOps(`Link gerado: ${link}`)
           );
         } else {
@@ -3613,7 +3758,7 @@
         document.body.classList.add("solo-mode");
         const titles = {
           reputacao: "Controle de reputação",
-          vinculo: "Solicitações de vínculo",
+          vinculo: "New Seller",
         };
         const bar = document.createElement("div");
         bar.id = "solo-bar";
@@ -3638,12 +3783,14 @@
         initData();
         const checkoutMessage = consumeCheckoutReturn();
         loadVinculoStore();
+        const slaNotes = maybeSlaNoticesOps(loadVinculoStore());
         const imported = consumeVinculoImportFromUrl();
         updateVinculoNavBadge();
         if (checkoutMessage) navigate("sac-reputacao");
         else if (imported || solo === "vinculo") navigate("vinculo");
         else navigate("sac-reputacao");
         if (checkoutMessage) setTimeout(() => showToastOps(checkoutMessage), 100);
+        slaNotes.forEach((msg, i) => setTimeout(() => showToastOps(msg), 200 + i * 400));
         window.addEventListener("storage", function (event) {
           if (event.key !== VINCULO_STORE_KEY) return;
           updateVinculoNavBadge();
